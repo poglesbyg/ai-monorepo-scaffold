@@ -25,10 +25,9 @@ export async function getUser({
 }
 
 /**
- * Lists all users in a tenant
+ * Lists all users
  * @param db - Database instance
- * @param tenantId - The tenant ID to filter users by
- * @returns Array of users in the tenant
+ * @returns Array of users
  */
 export async function listUsers({
   db,
