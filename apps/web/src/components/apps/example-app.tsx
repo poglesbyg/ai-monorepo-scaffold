@@ -1,7 +1,7 @@
 import { AppLayout } from '../layout'
 import { AppProvider } from '../providers/app-provider'
 
-export function ConversationApp() {
+export function ExampleApp() {
   return (
     <AppProvider>
       <AppLayout>

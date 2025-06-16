@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@10.11.0",
-  "description": "ProcessPilot",
+  "description": "Monorepo scaffold",
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",

@@ -111,11 +111,6 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
-.prose-slate {
-  --tw-prose-bullets: inherit;
-  --tw-prose-invert-bullets: inherit;
-}
-
 /* Tailwind V4 thinks that laptops don't have hover - this fixes it */
 @custom-variant hover (&:hover);
 
@@ -150,32 +145,4 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-}
-
-/* Custom colors and animations from ProcessPilot mockup */
-.bg-lavender {
-  background-color: #cec8f4;
-}
-
-.dark .bg-lavender {
-  background-color: rgba(206, 200, 244, 0.1);
-}
-
-@keyframes pulse-amber {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.4);
-  }
-}
-
-.animate-pulse-amber {
-  animation: pulse-amber 2s infinite;
-}
-
-/* Grid columns for Gantt chart */
-.grid-cols-30 {
-  grid-template-columns: repeat(30, minmax(40px, 1fr));
 }
