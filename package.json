@@ -15,8 +15,7 @@
     "fix": "pnpm run fix:tsconfig && pnpm run fix:eslint && pnpm run fix:prettier",
     "fix:prettier": "prettier --write .",
     "fix:eslint": "eslint . --fix",
-    "fix:tsconfig": "monorepo-typescript-references fix",
-    "functions:excel-to-csv:deploy": "bash apps/functions/excel-to-csv/deploy.sh"
+    "fix:tsconfig": "monorepo-typescript-references fix"
   },
   "devDependencies": {
     "@ocavue/eslint-config": "^3.0.0",
