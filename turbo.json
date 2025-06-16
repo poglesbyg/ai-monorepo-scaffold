@@ -1,0 +1,45 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "tasks": {
+    "build": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["^build"],
+      "env": [
+        "DATABASE_URL",
+        "AUTH_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "OPENAI_API_KEY",
+        "GEMINI_API_KEY",
+        "LIVEKIT_URL",
+        "LIVEKIT_API_KEY",
+        "LIVEKIT_API_SECRET",
+        "PERPLEXITY_API_KEY",
+        "VERCEL_URL",
+        "VERCEL_BRANCH_URL",
+        "VERCEL_PROJECT_PRODUCTION_URL",
+        "GCS_PROJECT_ID",
+        "GCS_CLIENT_EMAIL",
+        "GCS_PRIVATE_KEY",
+        "GCS_BUCKET",
+        "MAILGUN_API_KEY",
+        "MAILGUN_WEBHOOK_SIGNING_KEY",
+        "MAILGUN_DOMAIN",
+        "EXCEL_TO_CSV_ENDPOINT"
+      ]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "preview": {
+      "dependsOn": ["build"],
+      "persistent": true,
+      "cache": false
+    },
+    "test": {
+      "outputs": [],
+      "dependsOn": ["^build"]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project README Context
+
+## ProcessPilot
+
+ProcessPilot is an process management tools for individuals. They can use it to manage a complex project such as a divorce, IVF, cycle, or chemo## Core Concepts
+
+ProcessPilot is a tool designed to help individuals manage complex projects by providing a centralized platform for communication, task management, event scheduling, and contact organization.
+
+## Development cycle
+
+1. Before writing any code, come up with an extremely good plan, review the plan, and then ask the user for permission to execute the plan.
+2. After you have executed the plan, run: `pnpm typecheck` and `pnpm lint`
+3. To run tests: `pnpm test --filter @app/<web/api/db>`
+4. Never try to start a dev server or curl a local endpoint.
