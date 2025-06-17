@@ -18,6 +18,23 @@ This monorepo includes:
   - [TypeScript](https://www.typescriptlang.org/) for static typing.
   - [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/) for code quality.
 
+## Perfect for AI-Assisted Development
+
+This scaffold is specifically designed to excel with AI coding assistants and "vibe coding" workflows:
+
+- **Rich Examples**: The codebase provides comprehensive examples of common patterns like API routing, database connections, migrations, authentication flows, and UI components that AI can learn from and replicate.
+- **Comprehensive Cursor Rules**: Pre-configured `.cursor/rules/` directory with detailed guidelines for:
+  - Database patterns and Kysely type helpers
+  - tRPC and React Query integration patterns
+  - React component conventions and shadcn/ui usage
+  - TypeScript best practices and naming conventions
+  - Environment variable management
+  - Code organization and project structure
+- **Consistent Patterns**: Standardized approaches across the entire stack make it easy for AI to understand and extend the codebase following established conventions.
+- **Type Safety**: Full TypeScript coverage provides clear contracts and interfaces that AI can work with confidently.
+
+Whether you're pair programming with Claude, GitHub Copilot, or Cursor's AI, this scaffold gives your AI assistant the context and examples it needs to generate high-quality, consistent code that follows your project's patterns.
+
 ## Getting Started
 
 1.  **Clone the repository:**
