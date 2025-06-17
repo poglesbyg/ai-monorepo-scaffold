@@ -88,3 +88,12 @@ Whether you're pair programming with Claude, GitHub Copilot, or Cursor's AI, thi
 - `pnpm lint`: Lint all code.
 - `pnpm typecheck`: Run TypeScript to check for type errors.
 - `pnpm test`: Run tests.
+
+# Authors
+
+- [@ocavue](https://github.com/ocavue)
+- [@maccman](https://github.com/maccman)
+
+# License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
