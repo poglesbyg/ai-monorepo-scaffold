@@ -1,5 +1,5 @@
 import { navigate } from 'astro:transitions/client'
-import { Home } from 'lucide-react'
+import { Home, Dna } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -73,6 +73,13 @@ export function AppSidebar() {
         label="Conversation"
         href={'/'}
         active={currentPath === '/'}
+      />
+
+      <NavItem
+        icon={<Dna size={15} />}
+        label="CRISPR Studio"
+        href={'/crispr'}
+        active={currentPath === '/crispr'}
       />
 
       <div className="flex-grow" />

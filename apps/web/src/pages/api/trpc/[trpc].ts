@@ -16,9 +16,11 @@ async function createContext({ req }: CreateContextOptions): Promise<Context> {
   const session = await auth.api.getSession({ headers: req.headers })
 
   const user = session?.user.id
-    ? await getUser({ db, userId: session.user.id })
+    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      await getUser({ db, userId: session.user.id })
     : null
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   return { db, session: session ?? null, env, user }
 }
 

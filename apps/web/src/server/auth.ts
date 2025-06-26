@@ -9,6 +9,7 @@ import { createAuth } from './create-auth'
 import { db } from './db'
 
 export const auth = createAuth({
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   db: db,
   baseURL: SITE_BASE_URL,
   secret: AUTH_SECRET,

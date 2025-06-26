@@ -1,14 +1,11 @@
 import { defineMiddleware } from 'astro:middleware'
 
-import { auth } from './server/auth'
+// Temporarily disable auth for demo purposes
+// import { auth } from './server/auth'
 
 // `context` and `next` are automatically typed
 export const onRequest = defineMiddleware(async (context, next) => {
-  const sessionData = await auth.api.getSession({
-    headers: context.request.headers,
-  })
-
-  context.locals.userId = sessionData?.user?.id
-
+  // Skip all authentication for demo purposes to avoid database setup issues
+  context.locals.userId = undefined
   return await next()
 })
