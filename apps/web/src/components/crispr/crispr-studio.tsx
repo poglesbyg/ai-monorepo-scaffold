@@ -1,5 +1,13 @@
 import { motion } from 'framer-motion'
-import { Dna, Zap, Target, BarChart3, Microscope, Settings } from 'lucide-react'
+import {
+  Dna,
+  Zap,
+  Target,
+  BarChart3,
+  Microscope,
+  Settings,
+  Layers,
+} from 'lucide-react'
 import { useState } from 'react'
 
 import {
@@ -16,6 +24,8 @@ import {
   CardTitle,
 } from '../ui/card'
 
+import { BatchAnalysis } from './batch-analysis'
+import ExperimentsDashboardDemo from './experiments-dashboard-demo'
 import { GuideResultsTable } from './guide-results-table'
 import { MolecularViewer3D } from './molecular-viewer-3d'
 import { OffTargetAnalysis } from './off-target-analysis'
@@ -81,6 +91,7 @@ export function CrisprStudio() {
             {[
               { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
               { id: 'design', label: 'Guide Design', icon: Target },
+              { id: 'batch', label: 'Batch Processing', icon: Layers },
               { id: 'analysis', label: 'Analysis', icon: Microscope },
               { id: 'results', label: 'Results', icon: Zap },
             ].map((tab) => {
@@ -106,13 +117,14 @@ export function CrisprStudio() {
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
-        {activeTab === 'dashboard' && <DashboardView />}
+        {activeTab === 'dashboard' && <ExperimentsDashboardDemo />}
         {activeTab === 'design' && (
           <DesignView
             onSequenceDesigned={setCurrentSequence}
             onGuidesGenerated={setAllGuides}
           />
         )}
+        {activeTab === 'batch' && <BatchProcessingView />}
         {activeTab === 'analysis' && (
           <AnalysisView
             sequence={currentSequence}
@@ -126,164 +138,6 @@ export function CrisprStudio() {
         {activeTab === 'results' && <ResultsView />}
       </main>
     </div>
-  )
-}
-
-function DashboardView() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-8"
-    >
-      {/* Welcome Section */}
-      <div className="text-center space-y-4">
-        <motion.h2
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent"
-        >
-          Design Precision Gene Editing
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-xl text-slate-300 max-w-3xl mx-auto"
-        >
-          Harness the power of AI to design optimal CRISPR guide RNAs with
-          unprecedented accuracy and efficiency
-        </motion.p>
-      </div>
-
-      {/* Quick Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="grid grid-cols-1 md:grid-cols-4 gap-6"
-      >
-        {[
-          {
-            title: 'Experiments',
-            value: '0',
-            icon: Microscope,
-            color: 'from-purple-500 to-purple-600',
-          },
-          {
-            title: 'Guide RNAs',
-            value: '0',
-            icon: Target,
-            color: 'from-pink-500 to-pink-600',
-          },
-          {
-            title: 'Success Rate',
-            value: '—',
-            icon: Zap,
-            color: 'from-blue-500 to-blue-600',
-          },
-          {
-            title: 'Analyses',
-            value: '0',
-            icon: BarChart3,
-            color: 'from-green-500 to-green-600',
-          },
-        ].map((stat, index) => {
-          const Icon = stat.icon
-          return (
-            <Card
-              key={index}
-              className="bg-white/5 border-white/10 backdrop-blur-sm"
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-3">
-                  <div
-                    className={`p-2 bg-gradient-to-r ${stat.color} rounded-lg`}
-                  >
-                    <Icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-400">{stat.title}</p>
-                    <p className="text-2xl font-bold text-white">
-                      {stat.value}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </motion.div>
-
-      {/* Getting Started */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-white">Get Started</CardTitle>
-            <CardDescription className="text-slate-400">
-              Begin your CRISPR design journey in just a few steps
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button
-                className="h-auto p-6 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 border-0"
-                onClick={() => {
-                  /* TODO: Navigate to design */
-                }}
-              >
-                <div className="text-center space-y-2">
-                  <Target className="h-8 w-8 mx-auto" />
-                  <div>
-                    <p className="font-semibold">Design Guide RNAs</p>
-                    <p className="text-sm opacity-90">
-                      Input your target sequence
-                    </p>
-                  </div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-auto p-6 border-white/20 text-white hover:bg-white/10"
-                onClick={() => {
-                  /* TODO: Load example */
-                }}
-              >
-                <div className="text-center space-y-2">
-                  <Dna className="h-8 w-8 mx-auto" />
-                  <div>
-                    <p className="font-semibold">Load Example</p>
-                    <p className="text-sm opacity-70">Try with sample data</p>
-                  </div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-auto p-6 border-white/20 text-white hover:bg-white/10"
-                onClick={() => {
-                  /* TODO: Show tutorial */
-                }}
-              >
-                <div className="text-center space-y-2">
-                  <Microscope className="h-8 w-8 mx-auto" />
-                  <div>
-                    <p className="font-semibold">Learn More</p>
-                    <p className="text-sm opacity-70">Interactive tutorial</p>
-                  </div>
-                </div>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    </motion.div>
   )
 }
 
@@ -627,6 +481,46 @@ function AnalysisView({
           </CardContent>
         </Card>
       )}
+    </motion.div>
+  )
+}
+
+function BatchProcessingView() {
+  const defaultDesignParameters: DesignParameters = {
+    targetSequence: '',
+    pamType: 'NGG',
+    minEfficiencyScore: 0.3,
+    maxOffTargets: 100,
+    allowNonCanonicalPAMs: false,
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div className="text-center space-y-4 mb-8">
+        <motion.h2
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent"
+        >
+          Batch Processing & Advanced Analytics
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-lg text-slate-300 max-w-2xl mx-auto"
+        >
+          Process multiple sequences simultaneously with comprehensive analysis
+          and professional reporting
+        </motion.p>
+      </div>
+
+      <BatchAnalysis designParameters={defaultDesignParameters} />
     </motion.div>
   )
 }

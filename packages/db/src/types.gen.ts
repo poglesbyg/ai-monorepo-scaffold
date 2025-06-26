@@ -9,6 +9,8 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   ? ColumnType<S, I | undefined, U>
   : ColumnType<T, T | undefined, T>;
 
+export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
+
 export type Json = JsonValue;
 
 export type JsonArray = JsonValue[];
@@ -20,6 +22,8 @@ export type JsonObject = {
 export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
+
+export type Numeric = ColumnType<string, number | string, number | string>;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
@@ -41,7 +45,7 @@ export interface Account {
   /**
    * The time when the account was created
    */
-  createdAt: Generated<Timestamp>;
+  createdAt: Generated<Timestamp | null>;
   /**
    * Unique identifier for each account
    */
@@ -73,31 +77,132 @@ export interface Account {
   /**
    * The time when the account was last updated
    */
-  updatedAt: Generated<Timestamp>;
+  updatedAt: Generated<Timestamp | null>;
   /**
    * The id of the user
    */
   userId: string;
 }
 
-export interface Credential {
-  createdAt: Generated<Timestamp | null>;
-  email: string | null;
+export interface AnalysisResult {
+  algorithmUsed: string | null;
+  analysisType: string;
+  completedAt: Timestamp | null;
+  computationTimeMs: number | null;
+  createdAt: Generated<Timestamp>;
+  errorMessage: string | null;
+  experimentId: string;
   id: Generated<string>;
+  parameters: Json | null;
+  resultsData: Json | null;
+  status: Generated<string | null>;
+}
+
+export interface Credential {
+  /**
+   * The time when the credential was created
+   */
+  createdAt: Generated<Timestamp | null>;
+  /**
+   * The email associated with this credential
+   */
+  email: string | null;
+  /**
+   * Unique identifier for each credential
+   */
+  id: Generated<string>;
+  /**
+   * A user-friendly label for this credential
+   */
   label: string | null;
+  /**
+   * Whether this is the primary credential for the user
+   */
   primary: boolean | null;
+  /**
+   * The authentication provider name
+   */
   provider: string;
+  /**
+   * The account id from the provider
+   */
   providerAccountId: string | null;
+  /**
+   * JSON object containing provider tokens
+   */
   tokens: Json;
+  /**
+   * The time when the credential was last updated
+   */
   updatedAt: Generated<Timestamp | null>;
+  /**
+   * The id of the user who owns this credential
+   */
   userId: string;
+}
+
+export interface Experiment {
+  createdAt: Generated<Timestamp>;
+  createdBy: string;
+  description: string | null;
+  experimentType: Generated<string | null>;
+  id: Generated<string>;
+  name: string;
+  status: Generated<string | null>;
+  targetOrganism: string | null;
+  updatedAt: Generated<Timestamp>;
+}
+
+export interface GuideRna {
+  algorithmUsed: string | null;
+  algorithmVersion: string | null;
+  createdAt: Generated<Timestamp>;
+  efficiencyScore: Numeric | null;
+  gcContent: Numeric | null;
+  guideSequence: string;
+  id: Generated<string>;
+  onTargetScore: Numeric | null;
+  pamSequence: string;
+  sequenceId: string;
+  specificityScore: Numeric | null;
+  strand: string;
+  targetPosition: number;
+}
+
+export interface OffTargetSite {
+  annotation: string | null;
+  bindingScore: Numeric | null;
+  chromosome: string | null;
+  createdAt: Generated<Timestamp>;
+  cuttingScore: Numeric | null;
+  guideRnaId: string;
+  id: Generated<string>;
+  mismatchCount: Generated<number>;
+  mismatchPositions: number[] | null;
+  position: Int8 | null;
+  sequence: string;
+  strand: string | null;
+}
+
+export interface Sequence {
+  chromosome: string | null;
+  createdAt: Generated<Timestamp>;
+  endPosition: Int8 | null;
+  experimentId: string;
+  id: Generated<string>;
+  name: string;
+  organism: string | null;
+  sequence: string;
+  sequenceType: Generated<string | null>;
+  startPosition: Int8 | null;
+  strand: string | null;
 }
 
 export interface Session {
   /**
    * The time when the session was created
    */
-  createdAt: Generated<Timestamp>;
+  createdAt: Generated<Timestamp | null>;
   /**
    * The time when the session expires
    */
@@ -117,7 +222,7 @@ export interface Session {
   /**
    * The time when the session was last updated
    */
-  updatedAt: Generated<Timestamp>;
+  updatedAt: Generated<Timestamp | null>;
   /**
    * The user agent information of the device
    */
@@ -129,32 +234,53 @@ export interface Session {
 }
 
 export interface User {
+  /**
+   * The time when the user was created
+   */
   createdAt: Generated<Timestamp | null>;
+  /**
+   * The email address of the user
+   */
   email: string | null;
   /**
    * Whether the user email is verified
    */
   emailVerified: Generated<boolean>;
+  /**
+   * Unique identifier for each user
+   */
   id: Generated<string>;
   /**
    * The image URL of the user
    */
   image: string | null;
+  /**
+   * The time when the user last interacted with the system
+   */
   lastInteractionAt: Timestamp | null;
+  /**
+   * The display name of the user
+   */
   name: string | null;
+  /**
+   * The current status of the user account
+   */
   status: Generated<UserStatus>;
+  /**
+   * The user preferred timezone
+   */
   timeZone: string | null;
   /**
    * The time when the user was last updated
    */
-  updatedAt: Generated<Timestamp>;
+  updatedAt: Generated<Timestamp | null>;
 }
 
 export interface Verification {
   /**
    * The time when the verification was created
    */
-  createdAt: Generated<Timestamp>;
+  createdAt: Generated<Timestamp | null>;
   /**
    * The time when the verification request expires
    */
@@ -170,7 +296,7 @@ export interface Verification {
   /**
    * The time when the verification was last updated
    */
-  updatedAt: Generated<Timestamp>;
+  updatedAt: Generated<Timestamp | null>;
   /**
    * The value to be verified
    */
@@ -179,7 +305,12 @@ export interface Verification {
 
 export interface DB {
   accounts: Account;
+  analysisResults: AnalysisResult;
   credentials: Credential;
+  experiments: Experiment;
+  guideRnas: GuideRna;
+  offTargetSites: OffTargetSite;
+  sequences: Sequence;
   sessions: Session;
   users: User;
   verifications: Verification;

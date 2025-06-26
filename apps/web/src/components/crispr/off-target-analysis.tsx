@@ -197,21 +197,24 @@ export function OffTargetAnalysis({
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const performAnalysis = useCallback(async (guide: GuideRNA) => {
-    setIsAnalyzing(true)
-    setError(null)
+  const performAnalysis = useCallback(
+    async (guide: GuideRNA) => {
+      setIsAnalyzing(true)
+      setError(null)
 
-    try {
-      const result = await analyzeOffTargets(guide)
-      setAnalysis(result)
-      onAnalysisComplete?.(result)
-    } catch (err) {
-      setError('Failed to analyze off-targets. Please try again.')
-      console.error('Off-target analysis error:', err)
-    } finally {
-      setIsAnalyzing(false)
-    }
-  }, [onAnalysisComplete])
+      try {
+        const result = await analyzeOffTargets(guide)
+        setAnalysis(result)
+        onAnalysisComplete?.(result)
+      } catch (err) {
+        setError('Failed to analyze off-targets. Please try again.')
+        console.error('Off-target analysis error:', err)
+      } finally {
+        setIsAnalyzing(false)
+      }
+    },
+    [onAnalysisComplete],
+  )
 
   useEffect(() => {
     if (selectedGuide) {

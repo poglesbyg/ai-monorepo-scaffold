@@ -8,7 +8,6 @@ CREATE TABLE experiments (
     description TEXT,
     target_organism VARCHAR(100),
     created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     
@@ -114,7 +113,6 @@ CREATE TABLE analysis_results (
 
 -- Create indexes for performance
 CREATE INDEX idx_experiments_created_by ON experiments(created_by);
-CREATE INDEX idx_experiments_tenant_id ON experiments(tenant_id);
 CREATE INDEX idx_experiments_status ON experiments(status);
 
 CREATE INDEX idx_sequences_experiment_id ON sequences(experiment_id);
