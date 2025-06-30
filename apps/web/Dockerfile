@@ -29,7 +29,7 @@ RUN pnpm build
 
 # Create production deployment
 WORKDIR /app
-RUN pnpm --filter @seqconsult/web deploy /prod/web
+RUN pnpm --filter @seqconsult/web deploy --legacy /prod/web
 
 # Production stage
 FROM node:20-alpine AS runner
