@@ -21,11 +21,11 @@ spec:
       - name: web
         image: IMAGE_PLACEHOLDER
         ports:
-        - containerPort: 3000
+        - containerPort: 3001
           protocol: TCP
         env:
         - name: PORT
-          value: "3000"
+          value: "3001"
         - name: HOST
           value: "0.0.0.0"
         - name: NODE_ENV
@@ -70,13 +70,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 3000
+            port: 3001
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /
-            port: 3000
+            port: 3001
           initialDelaySeconds: 5
           periodSeconds: 5
 ---
@@ -90,9 +90,9 @@ metadata:
 spec:
   ports:
   - name: http
-    port: 3000
+    port: 3001
     protocol: TCP
-    targetPort: 3000
+    targetPort: 3001
   selector:
     app: sequencing-consultant
     component: web
