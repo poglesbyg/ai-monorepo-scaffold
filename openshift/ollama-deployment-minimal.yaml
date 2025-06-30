@@ -1,0 +1,145 @@
+# Minimal resource Ollama deployment for OpenShift environments with limited resources
+# This uses the smallest possible Llama model (tinyllama) and minimal resources
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  labels:
+    app: sequencing-consultant
+    component: ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sequencing-consultant
+      component: ai
+  template:
+    metadata:
+      labels:
+        app: sequencing-consultant
+        component: ai
+    spec:
+      containers:
+      - name: ollama
+        image: ollama/ollama:latest
+        ports:
+        - containerPort: 11434
+          protocol: TCP
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0"
+        - name: OLLAMA_MODELS
+          value: "/models"
+        - name: OLLAMA_KEEP_ALIVE
+          value: "2m"  # Shorter keep-alive to save memory
+        - name: OLLAMA_NUM_PARALLEL
+          value: "1"   # Limit parallel requests
+        - name: OLLAMA_MAX_LOADED_MODELS
+          value: "1"   # Only keep one model in memory
+        volumeMounts:
+        - name: ollama-storage
+          mountPath: /models
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+        readinessProbe:
+          httpGet:
+            path: /api/tags
+            port: 11434
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /api/tags
+            port: 11434
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+      initContainers:
+      - name: model-downloader
+        image: ollama/ollama:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Starting Ollama service for model download..."
+          ollama serve &
+          OLLAMA_PID=$!
+          
+          echo "Waiting for Ollama to be ready..."
+          until curl -s http://localhost:11434/api/tags > /dev/null; do
+            echo "Waiting for Ollama..."
+            sleep 2
+          done
+          
+          echo "Checking if model exists..."
+          if ! ollama list | grep -q "tinyllama"; then
+            echo "Downloading tinyllama model (1.1B parameters, ~600MB)..."
+            ollama pull tinyllama:latest || {
+              echo "Failed to download tinyllama, trying llama3.2:1b..."
+              ollama pull llama3.2:1b || {
+                echo "Failed to download model, continuing anyway..."
+              }
+            }
+          else
+            echo "Model already exists"
+          fi
+          
+          echo "Stopping Ollama service..."
+          kill $OLLAMA_PID
+          echo "Model setup complete"
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0"
+        - name: OLLAMA_MODELS
+          value: "/models"
+        volumeMounts:
+        - name: ollama-storage
+          mountPath: /models
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+      volumes:
+      - name: ollama-storage
+        persistentVolumeClaim:
+          claimName: ollama-models-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  labels:
+    app: sequencing-consultant
+    component: ai
+spec:
+  ports:
+  - name: http
+    port: 11434
+    protocol: TCP
+    targetPort: 11434
+  selector:
+    app: sequencing-consultant
+    component: ai
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-models-pvc
+  labels:
+    app: sequencing-consultant
+    component: ai
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi  # Smaller storage for tiny models 

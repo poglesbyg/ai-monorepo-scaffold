@@ -15,9 +15,29 @@ CURRENT_PROJECT=$(oc project -q)
 echo "📁 Current project: $CURRENT_PROJECT"
 echo ""
 
+# Check available resources
+echo "📊 Checking available resources..."
+MEMORY_LIMIT=$(oc describe resourcequota compute-resources 2>/dev/null | grep "limits.memory" | awk '{print $3}' | sed 's/Mi//')
+if [ -n "$MEMORY_LIMIT" ]; then
+    MEMORY_USED=$(oc describe resourcequota compute-resources 2>/dev/null | grep "limits.memory" | awk '{print $2}' | sed 's/Mi//')
+    MEMORY_AVAILABLE=$((MEMORY_LIMIT - MEMORY_USED))
+    echo "Memory available: ${MEMORY_AVAILABLE}Mi"
+    
+    if [ "$MEMORY_AVAILABLE" -lt 1024 ]; then
+        echo "⚠️  Limited memory available. Using minimal AI deployment..."
+        OLLAMA_DEPLOYMENT="openshift/ollama-deployment-minimal.yaml"
+    else
+        OLLAMA_DEPLOYMENT="openshift/ollama-deployment.yaml"
+    fi
+else
+    echo "No resource quotas found. Using standard deployment."
+    OLLAMA_DEPLOYMENT="openshift/ollama-deployment.yaml"
+fi
+
 # Deploy Ollama AI service first
 echo "🤖 Deploying Ollama AI service..."
-if oc apply -f openshift/ollama-deployment.yaml; then
+echo "Using deployment: $OLLAMA_DEPLOYMENT"
+if oc apply -f "$OLLAMA_DEPLOYMENT"; then
     echo "✅ Ollama deployment created"
 else
     echo "❌ Failed to create Ollama deployment"
