@@ -1,0 +1,81 @@
+---
+import Layout from '../layouts/layout.astro'
+import { CheckCircle, Mail, Phone, ArrowLeft } from 'lucide-react'
+---
+
+<Layout title="Thank You - Sequencing Consultation">
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4">
+    <div class="max-w-2xl w-full">
+      <div class="bg-white rounded-lg shadow-xl p-8 text-center">
+        <div class="mb-6 inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full">
+          <CheckCircle class="w-12 h-12 text-green-600" />
+        </div>
+        
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+          Thank You for Your Consultation Request!
+        </h1>
+        
+        <p class="text-lg text-gray-600 mb-8">
+          We've received your sequencing consultation request and will review it carefully.
+          Our team of experts will contact you within 1-2 business days.
+        </p>
+        
+        <div class="bg-blue-50 rounded-lg p-6 mb-8">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">What Happens Next?</h2>
+          <div class="space-y-3 text-left">
+            <div class="flex items-start">
+              <div class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</div>
+              <div>
+                <p class="font-medium text-gray-900">Confirmation Email</p>
+                <p class="text-gray-600">You'll receive an email confirmation shortly with your consultation details.</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</div>
+              <div>
+                <p class="font-medium text-gray-900">Expert Review</p>
+                <p class="text-gray-600">Our sequencing experts will review your requirements and prepare recommendations.</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</div>
+              <div>
+                <p class="font-medium text-gray-900">Personalized Quote</p>
+                <p class="text-gray-600">We'll send you a detailed quote with service recommendations within 1-2 business days.</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</div>
+              <div>
+                <p class="font-medium text-gray-900">Follow-up Call</p>
+                <p class="text-gray-600">We'll schedule a call to discuss your project in detail and answer any questions.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50 rounded-lg p-6 mb-8">
+          <h3 class="font-semibold text-gray-900 mb-3">Need Immediate Assistance?</h3>
+          <div class="space-y-2">
+            <a href="mailto:sequencing@facility.edu" class="flex items-center justify-center text-blue-600 hover:text-blue-800">
+              <Mail class="w-5 h-5 mr-2" />
+              sequencing@facility.edu
+            </a>
+            <a href="tel:+1234567890" class="flex items-center justify-center text-blue-600 hover:text-blue-800">
+              <Phone class="w-5 h-5 mr-2" />
+              (123) 456-7890
+            </a>
+          </div>
+        </div>
+        
+        <a 
+          href="/"
+          class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
+        >
+          <ArrowLeft class="w-5 h-5 mr-2" />
+          Return to Home
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout> 

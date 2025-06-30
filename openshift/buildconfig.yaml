@@ -1,0 +1,33 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: sequencing-consultant-web
+  labels:
+    app: sequencing-consultant
+    component: web
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/poglesbyg/ai-monorepo-scaffold.git
+      ref: main
+    contextDir: /
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: apps/web/Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: sequencing-consultant-web:latest
+  triggers:
+  - type: ConfigChange
+  - type: ImageChange
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: sequencing-consultant-web
+  labels:
+    app: sequencing-consultant
+    component: web 

@@ -1,9 +1,10 @@
-import { appRouter, getUser, type Context } from '@app/api'
+import { appRouter, getUser, type Context } from '@seqconsult/api'
+import { setupDb } from '@seqconsult/db'
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
 import type { APIRoute } from 'astro'
+import { DATABASE_URL } from 'astro:env/server'
 
 import { auth } from '@/server/auth'
-import { db } from '@/server/db'
 import { env } from '@/server/env'
 
 export const prerender = false
@@ -13,14 +14,15 @@ interface CreateContextOptions {
 }
 
 async function createContext({ req }: CreateContextOptions): Promise<Context> {
+  // Initialize database connection with explicit DATABASE_URL
+  const db = setupDb(DATABASE_URL)
+  
   const session = await auth.api.getSession({ headers: req.headers })
 
   const user = session?.user.id
-    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      await getUser({ db, userId: session.user.id })
+    ? await getUser({ db, userId: session.user.id })
     : null
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   return { db, session: session ?? null, env, user }
 }
 

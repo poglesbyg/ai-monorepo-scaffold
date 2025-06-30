@@ -1,11 +1,11 @@
-import type { AppRouter } from '@app/api'
-import { isError } from '@app/utils'
+import type { AppRouter } from '@seqconsult/api'
+import { isError } from '@seqconsult/utils'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createTRPCClient, httpBatchStreamLink, loggerLink } from '@trpc/client'
 import { useState } from 'react'
 import superjson from 'superjson'
 
-import { TRPCProvider } from '@/client/trpc'
+import { trpc } from '@/client/trpc'
 import { useSmartPolling } from '@/hooks/use-smart-polling'
 
 import { SmartPollingProvider } from './smart-polling-provider'
@@ -73,7 +73,7 @@ function TrpcProviderInner({ children }: { children: React.ReactNode }) {
         loggerLink({
           enabled: (options): boolean => {
             // Log all traffic in dev mode
-            if (import.meta.env.DEV) {
+            if (process.env.NODE_ENV === 'development') {
               return true
             }
 
@@ -95,9 +95,9 @@ function TrpcProviderInner({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
         {children}
-      </TRPCProvider>
+      </trpc.Provider>
     </QueryClientProvider>
   )
 }

@@ -10,63 +10,49 @@
 - Explain your OBSERVATIONS clearly, then provide REASONING to identify the exact issue. Add console logs when needed to gather more information.
 
 
-The project implements specialized business logic focused on CRISPR guide RNA design and analysis, with supporting infrastructure for authentication and real-time updates.
+The LIMS Microservice System implements a laboratory information management platform with three core components:
 
-## Core Business Domains
+## Core Services Architecture
+- Rust-based microservices handle laboratory data management and API endpoints
+- Python services manage AI analysis and data processing
+- React/TypeScript frontend provides lab technician interface
+- PostgreSQL stores experiment and sample data
 
-### CRISPR Guide RNA Design System
-Importance Score: 95
-- Located in `apps/web/src/lib/crispr/guide-design.ts`
-- Implements specialized algorithms for CRISPR guide RNA design
-- Calculates GC content and efficiency scores
-- Identifies PAM sites in DNA sequences
-- Generates and ranks guide RNA recommendations
+## Primary Business Components
 
-### Smart Polling Infrastructure
-Importance Score: 85
-- Located in `apps/web/src/components/providers/smart-polling-provider.tsx`
-- Dynamically adjusts polling intervals based on user activity:
-  - Active: 15 seconds
-  - Inactive: 1 minute
-  - Background: 2 minutes
-- Integrates with visibility and focus state tracking
+### Laboratory Data Management
+- Sample and batch tracking system
+- Experiment workflow orchestration
+- Result validation and flagging
+- Integration with existing lab systems
 
-### CRISPR Studio Interface
-Importance Score: 80
-- Located in `apps/web/src/components/crispr/crispr-studio.tsx`
-- Provides specialized interface for guide RNA design workflow
-- Implements multi-tab system for:
-  - Design dashboard
-  - Sequence analysis
-  - Results visualization
+### AI Analysis Pipeline
+File Path: `/lims-ai/src/ai_features.py`
+- Abnormal result detection
+- Automated data analysis
+- Pattern recognition in lab results
+- Predictive analytics for sample outcomes
 
-### Authentication System
-Importance Score: 75
-- Located in `apps/web/src/components/providers/auth-provider.tsx`
-- Manages session state and authentication flows
-- Handles unauthorized access redirections
-- Implements GitHub OAuth integration
+### Domain-Specific Implementations
+File Path: `/lims-core/src/validation/`
+- Custom validation rules for laboratory data
+- Sample metadata verification
+- Result range checking
+- Batch processing rules
 
-### User Management
-Importance Score: 70
-- Located in `packages/api/src/routers/user.ts`
-- Implements timezone-aware user preferences
-- Validates against IANA timezone database
-- Manages user-specific settings for CRISPR tools
+### Experiment Management
+File Path: `/lims-core/src/api/experiments.rs`
+- Experiment lifecycle tracking
+- Sample status monitoring
+- Result aggregation
+- Quality control workflows
 
-## Data Flow Architecture
-
-### Guide RNA Processing Pipeline
-Importance Score: 90
-1. Sequence Input → PAM Site Detection
-2. Guide RNA Generation → Efficiency Scoring
-3. Results Ranking → Visualization
-
-### Real-time Update System
-Importance Score: 85
-1. Smart Polling → Data Freshness
-2. Activity State Management → Polling Interval Adjustment
-3. Optimistic Updates → UI Responsiveness
+### Web Dashboard
+File Path: `/lims-ui/src/components/ExperimentsDashboard.tsx`
+- Real-time experiment monitoring
+- Result visualization
+- Sample tracking interface
+- Analysis report generation
 
 $END$
 

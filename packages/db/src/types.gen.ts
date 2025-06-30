@@ -9,8 +9,6 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   ? ColumnType<S, I | undefined, U>
   : ColumnType<T, T | undefined, T>;
 
-export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
-
 export type Json = JsonValue;
 
 export type JsonArray = JsonValue[];
@@ -84,18 +82,59 @@ export interface Account {
   userId: string;
 }
 
-export interface AnalysisResult {
-  algorithmUsed: string | null;
-  analysisType: string;
-  completedAt: Timestamp | null;
-  computationTimeMs: number | null;
+export interface ConsultationChat {
+  consultationId: string;
+  contextData: Json | null;
   createdAt: Generated<Timestamp>;
-  errorMessage: string | null;
-  experimentId: string;
   id: Generated<string>;
-  parameters: Json | null;
-  resultsData: Json | null;
+  messageContent: string;
+  messageRole: string;
+  modelUsed: string | null;
+  tokensUsed: number | null;
+}
+
+export interface Consultation {
+  budgetRange: string | null;
+  completedAt: Timestamp | null;
+  completionPercentage: Generated<number | null>;
+  createdAt: Generated<Timestamp>;
+  createdBy: string | null;
+  department: string | null;
+  email: string;
+  grantFundingStatus: string | null;
+  id: Generated<string>;
+  institution: string;
+  objectives: string | null;
+  phone: string | null;
+  piName: string;
+  projectDescription: string;
+  projectTitle: string;
+  researchArea: string | null;
   status: Generated<string | null>;
+  timeline: string | null;
+  updatedAt: Generated<Timestamp>;
+}
+
+export interface CostEstimate {
+  analysisCost: Numeric | null;
+  approvedAt: Timestamp | null;
+  approvedBy: string | null;
+  consultationId: string;
+  costNotes: string | null;
+  createdAt: Generated<Timestamp>;
+  discountAmount: Generated<Numeric | null>;
+  discountPercentage: Generated<Numeric | null>;
+  id: Generated<string>;
+  libraryPrepCost: Numeric | null;
+  quoteNumber: string | null;
+  sequencingCost: Numeric | null;
+  serviceCosts: Json;
+  storageCost: Numeric | null;
+  subtotal: Numeric;
+  taxAmount: Generated<Numeric | null>;
+  totalCost: Numeric;
+  updatedAt: Generated<Timestamp>;
+  validUntil: Timestamp | null;
 }
 
 export interface Credential {
@@ -141,61 +180,82 @@ export interface Credential {
   userId: string;
 }
 
-export interface Experiment {
+export interface ProjectDeliverable {
+  actualDeliveryDate: Timestamp | null;
+  consultationId: string;
   createdAt: Generated<Timestamp>;
-  createdBy: string;
-  description: string | null;
-  experimentType: Generated<string | null>;
+  deliverableType: string;
+  dependencies: string[] | null;
+  description: string;
+  estimatedDeliveryDate: Timestamp | null;
   id: Generated<string>;
-  name: string;
+  milestoneOrder: number;
+  notes: string | null;
   status: Generated<string | null>;
-  targetOrganism: string | null;
   updatedAt: Generated<Timestamp>;
 }
 
-export interface GuideRna {
-  algorithmUsed: string | null;
-  algorithmVersion: string | null;
+export interface SampleSpecification {
+  biologicalReplicates: number | null;
+  biosafetyLevel: string | null;
+  cellType: string | null;
+  concentrationRequirements: string | null;
+  consultationId: string;
+  controlGroups: string[] | null;
   createdAt: Generated<Timestamp>;
-  efficiencyScore: Numeric | null;
-  gcContent: Numeric | null;
-  guideSequence: string;
+  currentStorage: string | null;
+  expectedQuantity: string | null;
+  hazardousMaterials: Generated<boolean | null>;
   id: Generated<string>;
-  onTargetScore: Numeric | null;
-  pamSequence: string;
-  sequenceId: string;
-  specificityScore: Numeric | null;
-  strand: string;
-  targetPosition: number;
+  numberOfSamples: number;
+  organism: string;
+  qualityMetricsRequired: string[] | null;
+  sampleType: string;
+  specialHandling: string | null;
+  storageDuration: string | null;
+  strainOrGenotype: string | null;
+  technicalReplicates: number | null;
+  tissueType: string | null;
+  treatmentGroups: string[] | null;
+  updatedAt: Generated<Timestamp>;
 }
 
-export interface OffTargetSite {
-  annotation: string | null;
-  bindingScore: Numeric | null;
-  chromosome: string | null;
+export interface SequencingService {
+  basePricePerSample: Numeric | null;
+  category: string;
   createdAt: Generated<Timestamp>;
-  cuttingScore: Numeric | null;
-  guideRnaId: string;
+  deliverables: string[] | null;
+  description: string;
   id: Generated<string>;
-  mismatchCount: Generated<number>;
-  mismatchPositions: number[] | null;
-  position: Int8 | null;
-  sequence: string;
-  strand: string | null;
+  isActive: Generated<boolean | null>;
+  keyFeatures: string[] | null;
+  libraryPrepIncluded: Generated<boolean | null>;
+  platform: string | null;
+  readLength: string | null;
+  sampleRequirements: Json;
+  serviceCode: string;
+  serviceName: string;
+  typicalApplications: string[] | null;
+  typicalCoverage: string | null;
+  typicalTurnaroundDays: number;
+  updatedAt: Generated<Timestamp>;
+  volumeDiscounts: Json | null;
 }
 
-export interface Sequence {
-  chromosome: string | null;
-  createdAt: Generated<Timestamp>;
-  endPosition: Int8 | null;
-  experimentId: string;
+export interface ServiceRecommendation {
+  acceptedByUser: boolean | null;
+  aiConfidenceScore: Numeric;
+  alternatives: string[] | null;
+  consultationId: string;
+  estimatedCost: Numeric | null;
+  estimatedSamples: number | null;
   id: Generated<string>;
-  name: string;
-  organism: string | null;
-  sequence: string;
-  sequenceType: Generated<string | null>;
-  startPosition: Int8 | null;
-  strand: string | null;
+  priority: string;
+  recommendationReason: string;
+  recommendedAt: Generated<Timestamp>;
+  serviceId: string;
+  specialConsiderations: string | null;
+  userFeedback: string | null;
 }
 
 export interface Session {
@@ -305,12 +365,14 @@ export interface Verification {
 
 export interface DB {
   accounts: Account;
-  analysisResults: AnalysisResult;
+  consultationChats: ConsultationChat;
+  consultations: Consultation;
+  costEstimates: CostEstimate;
   credentials: Credential;
-  experiments: Experiment;
-  guideRnas: GuideRna;
-  offTargetSites: OffTargetSite;
-  sequences: Sequence;
+  projectDeliverables: ProjectDeliverable;
+  sampleSpecifications: SampleSpecification;
+  sequencingServices: SequencingService;
+  serviceRecommendations: ServiceRecommendation;
   sessions: Session;
   users: User;
   verifications: Verification;

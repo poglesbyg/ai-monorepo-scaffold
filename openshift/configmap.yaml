@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sequencing-consultant-config
+  labels:
+    app: sequencing-consultant
+data:
+  formspree-endpoint: "https://formspree.io/f/YOUR_FORM_ID"
+  site-base-url: "https://your-app-url.apps.openshift.com" 

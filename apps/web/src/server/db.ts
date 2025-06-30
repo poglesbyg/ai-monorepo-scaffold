@@ -1,7 +1,7 @@
 // Mock database for demo purposes when SQLite setup fails
 async function initializeDatabase(): Promise<any> {
   try {
-    const { setupDb } = await import('@app/db')
+    const { setupDb } = await import('@seqconsult/db')
     const { DATABASE_URL } = await import('astro:env/server')
     const database = setupDb(DATABASE_URL)
     console.log('[db] Successfully initialized database')

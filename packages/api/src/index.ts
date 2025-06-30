@@ -1,4 +1,4 @@
-import { experimentsRouter } from './routers/experiments'
+import { consultationsRouter } from './routers/consultations'
 import { userRouter } from './routers/user'
 import { router } from './trpc'
 
@@ -8,7 +8,7 @@ export { getUser } from './actions/users/getters'
 
 export const appRouter = router({
   user: userRouter,
-  experiments: experimentsRouter,
+  consultations: consultationsRouter,
 })
 
 // Export type router type signature,

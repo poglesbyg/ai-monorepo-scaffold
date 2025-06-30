@@ -1,9 +1,9 @@
 {
-  "name": "@app/api",
+  "name": "@seqconsult/api",
   "type": "module",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "Server-side tRPC API definitions",
+  "description": "tRPC API for the Sequencing Facility Consultant",
   "main": "index.ts",
   "exports": {
     ".": "./src/index.ts"
@@ -13,8 +13,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@app/db": "workspace:*",
-    "@app/utils": "workspace:*",
+    "@seqconsult/db": "workspace:*",
+    "@seqconsult/utils": "workspace:*",
     "@trpc/server": "^11.1.2",
     "kysely": "^0.28.2",
     "pg": "^8.15.6",

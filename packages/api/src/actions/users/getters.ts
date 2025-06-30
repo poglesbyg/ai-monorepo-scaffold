@@ -1,4 +1,4 @@
-import type { DB, User } from '@app/db/types'
+import type { DB, User } from '@seqconsult/db/types'
 import type { Kysely, Selectable } from 'kysely'
 
 import { trpcNotFoundError } from '../../helpers/kysely-trprc'

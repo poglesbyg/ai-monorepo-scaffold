@@ -8,3 +8,8 @@ outFile: './src/types.gen.ts'
 # 'table_name.column_name_in_snake_case': 'typescript_type'.
 # 'messages.asset_ids': 'string[] | null'
 # 'messages.content': "import('./column-types').MessageContent""
+serializer-properties:
+  'public.sequencing_services.sample_requirements': 'import("./src/column-types").SampleRequirementsColumnType'
+  'public.sequencing_services.volume_discounts': 'import("./src/column-types").VolumeDiscountsColumnType | null'
+  'public.consultation_chats.context_data': 'import("./src/column-types").ChatContextColumnType | null'
+  'public.cost_estimates.service_costs': 'import("./src/column-types").ServiceCostsColumnType'

@@ -1,4 +1,4 @@
-import type { DB } from '@app/db/types'
+import type { DB } from '@seqconsult/db/types'
 import {
   SITE_BASE_URL,
   SITE_DEPLOYMENT_URL,

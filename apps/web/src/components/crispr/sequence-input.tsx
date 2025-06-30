@@ -12,6 +12,8 @@ import {
 } from '../ui/card'
 import { Separator } from '../ui/separator'
 
+import { AISequenceAnalyzer } from './ai-sequence-analyzer'
+
 interface SequenceInputProps {
   onSequenceSubmit: (
     sequence: string,
@@ -165,7 +167,7 @@ export function SequenceInput({
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
+      <Card className="bg-white/5 border-white/20 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="text-white flex items-center space-x-2">
             <FileText className="h-5 w-5" />
@@ -180,20 +182,20 @@ export function SequenceInput({
           <div className="flex space-x-1 bg-black/20 rounded-lg p-1">
             <button
               onClick={() => setInputMethod('paste')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 inputMethod === 'paste'
-                  ? 'bg-purple-600 text-white'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-purple-600 text-white hover:bg-purple-700'
+                  : 'text-slate-400 hover:text-white hover:bg-white/10'
               }`}
             >
               Direct Input
             </button>
             <button
               onClick={() => setInputMethod('fasta')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 inputMethod === 'fasta'
-                  ? 'bg-purple-600 text-white'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-purple-600 text-white hover:bg-purple-700'
+                  : 'text-slate-400 hover:text-white hover:bg-white/10'
               }`}
             >
               FASTA Format
@@ -210,7 +212,7 @@ export function SequenceInput({
               value={sequenceName}
               onChange={(e) => setSequenceName(e.target.value)}
               placeholder="Enter a name for your sequence"
-              className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-3 py-2 bg-white/10 border border-white/30 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white/15 focus:border-purple-400 transition-all duration-200"
             />
           </div>
 
@@ -224,7 +226,7 @@ export function SequenceInput({
               onChange={(e) =>
                 setSequenceType(e.target.value as 'genomic' | 'cdna' | 'custom')
               }
-              className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-3 py-2 bg-white/10 border border-white/30 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white/15 focus:border-purple-400 transition-all duration-200"
             >
               <option value="genomic">Genomic DNA</option>
               <option value="cdna">cDNA</option>
@@ -242,7 +244,7 @@ export function SequenceInput({
                 variant="outline"
                 size="sm"
                 onClick={loadExample}
-                className="border-white/20 text-slate-300 hover:bg-white/10"
+                className="border-white/30 bg-white/5 text-slate-300 hover:bg-white/20 hover:border-white/40 transition-all duration-200"
               >
                 Load Example
               </Button>
@@ -260,7 +262,7 @@ export function SequenceInput({
                   : 'ATCGATCGATCG...'
               }
               rows={6}
-              className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+              className="w-full px-3 py-2 bg-white/10 border border-white/30 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white/15 focus:border-purple-400 transition-all duration-200 font-mono text-sm"
             />
           </div>
 
@@ -323,7 +325,7 @@ export function SequenceInput({
               )}
 
               {/* Statistics */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-black/20 rounded-lg">
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white/10 border border-white/20 rounded-lg">
                 <div className="text-center">
                   <div className="text-lg font-bold text-white">
                     {validation.stats.length}
@@ -358,7 +360,7 @@ export function SequenceInput({
           <Button
             onClick={handleSubmit}
             disabled={!validation?.isValid || !sequenceName.trim() || isLoading}
-            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
             {isLoading ? (
               <div className="flex items-center space-x-2">
@@ -371,6 +373,14 @@ export function SequenceInput({
           </Button>
         </CardContent>
       </Card>
+
+      {/* AI Sequence Analysis */}
+      {sequence && sequence.length >= 20 && (
+        <AISequenceAnalyzer 
+          sequence={sequence}
+          context={`Sequence Name: ${sequenceName}, Type: ${sequenceType}`}
+        />
+      )}
     </motion.div>
   )
 }

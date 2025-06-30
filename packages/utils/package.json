@@ -1,5 +1,5 @@
 {
-  "name": "@app/utils",
+  "name": "@seqconsult/utils",
   "type": "module",
   "version": "0.0.1",
   "description": "JavaScript utilities",

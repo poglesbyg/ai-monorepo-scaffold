@@ -63,7 +63,7 @@ const config = defineConfig({
 
   integrations: [react()],
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss() as any],
     resolve: {
       alias: {
         '@': path.resolve('./src'),
@@ -118,6 +118,11 @@ const config = defineConfig({
         context: 'server',
         access: 'secret',
         optional: false,
+      }),
+      PUBLIC_FORMSPREE_ENDPOINT: envField.string({
+        context: 'client',
+        access: 'public',
+        optional: true,
       }),
     },
   },

@@ -9,6 +9,7 @@ Successfully implemented **Option 1: Database Integration & Persistence** for th
 ## 🏗️ **Infrastructure Setup**
 
 ### **Docker PostgreSQL Database**
+
 - **Container**: `crispr-postgres` (PostgreSQL 16-Alpine)
 - **Port**: 5434 (mapped from internal 5432)
 - **Database**: `crispr_db`
@@ -18,6 +19,7 @@ Successfully implemented **Option 1: Database Integration & Persistence** for th
 - **Optional**: pgAdmin available at port 5050
 
 ### **Connection String**
+
 ```
 DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
 ```
@@ -27,22 +29,27 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
 ## 🗄️ **Database Schema**
 
 ### **Core Tables Created**
+
 1. **`experiments`** - CRISPR design projects
+
    - Experiment metadata (name, description, organism, type, status)
    - User ownership and timestamps
    - Status tracking (draft, analyzing, completed, archived)
 
 2. **`sequences`** - DNA sequences for analysis
+
    - Sequence data with validation (ATCGN pattern)
    - Genomic coordinates and strand information
    - Links to parent experiments
 
 3. **`guide_rnas`** - Designed guide RNAs with scoring
+
    - Guide sequences with PAM sites
    - Efficiency, specificity, and on-target scores
    - Algorithm metadata and versioning
 
 4. **`off_target_sites`** - Predicted off-target binding
+
    - Mismatch analysis and position tracking
    - Risk scoring (binding and cutting probabilities)
    - Gene annotation information
@@ -53,6 +60,7 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
    - Status tracking for long-running analyses
 
 ### **Performance Optimizations**
+
 - Strategic indexes on key query patterns
 - Timestamp triggers for automatic `updated_at` handling
 - Constraint validation for data integrity
@@ -65,6 +73,7 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
 ### **Experiments Router** (`/api/trpc/experiments`)
 
 #### **Query Endpoints**
+
 - `getAll` - List all user experiments
 - `getById` - Get specific experiment
 - `getWithSequences` - Experiment with related sequences
@@ -73,6 +82,7 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
 - `getByStatus` - Filter by experiment status
 
 #### **Mutation Endpoints**
+
 - `create` - Create new experiment
 - `update` - Update experiment metadata
 - `delete` - Delete experiment (cascades to related data)
@@ -80,11 +90,13 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
 - `saveCompleteData` - Atomic save of sequence + guides + off-targets
 
 #### **Nested Resources**
+
 - `sequences.*` - Sequence management (CRUD)
 - `guideRnas.*` - Guide RNA operations (batch save, update)
 - `offTargetSites.*` - Off-target site management
 
 ### **Data Validation**
+
 - Zod schema validation for all inputs
 - DNA sequence pattern validation
 - Score range validation (0-1)
@@ -95,6 +107,7 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
 ## 🎨 **Frontend Integration**
 
 ### **Experiments Dashboard**
+
 - **Location**: `/crispr` → Dashboard tab
 - **Demo Component**: `ExperimentsDashboardDemo.tsx`
 - **Features**:
@@ -105,12 +118,14 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
   - Database connection status indicator
 
 ### **UI Components**
+
 - **Status Badges**: Color-coded experiment states
 - **Form Validation**: Real-time input validation
 - **Loading States**: Skeleton components during data fetching
 - **Action Buttons**: CRUD operations with confirmation dialogs
 
 ### **Database-Ready Architecture**
+
 - API functions created and tested
 - Frontend components structured for easy integration
 - Demo data showing expected functionality
@@ -121,21 +136,25 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
 ## ⚡ **Quick Start**
 
 ### **1. Start Database**
+
 ```bash
 docker-compose up -d postgres
 ```
 
 ### **2. Run Migrations**
+
 ```bash
 DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db" pnpm --filter @app/db db:migrate
 ```
 
 ### **3. Start Development Server**
+
 ```bash
 DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db" AUTH_SECRET="dev-secret" GITHUB_CLIENT_ID="dev-placeholder" GITHUB_CLIENT_SECRET="dev-placeholder" pnpm dev
 ```
 
 ### **4. Access Application**
+
 - **CRISPR Studio**: http://localhost:3006/crispr
 - **Database Admin**: http://localhost:5050 (pgAdmin)
 
@@ -144,6 +163,7 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
 ## 🔬 **Integration Status**
 
 ### **✅ Completed**
+
 - PostgreSQL database setup with Docker
 - Complete schema design and migrations
 - Backend API with comprehensive endpoints
@@ -152,6 +172,7 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
 - Development environment configuration
 
 ### **🔄 Next Steps for Full Integration**
+
 1. Connect frontend components to actual API calls (replace demo data)
 2. Implement tRPC client properly (resolve import issues)
 3. Add authentication middleware to API endpoints
@@ -160,6 +181,7 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
 6. Connect off-target analysis to database storage
 
 ### **💾 Persistence Capabilities Ready**
+
 - Save CRISPR experiments with metadata
 - Store DNA sequences with validation
 - Persist guide RNA designs with scoring
@@ -172,6 +194,7 @@ DATABASE_URL="postgresql://crispr_user:crispr_password@localhost:5434/crispr_db"
 ## 🎯 **Value Delivered**
 
 This implementation provides:
+
 1. **Professional Database Architecture** - Production-ready PostgreSQL setup
 2. **Type-Safe API Layer** - Comprehensive tRPC endpoints with validation
 3. **Modern UI Components** - React components ready for database integration
@@ -182,4 +205,4 @@ The CRISPR Design Studio now has a solid persistence layer ready to store and ma
 
 ---
 
-*Implementation completed as part of Phase 3 development. Database integration provides the foundation for advanced features like experiment tracking, result archival, and collaborative research workflows.* 
+_Implementation completed as part of Phase 3 development. Database integration provides the foundation for advanced features like experiment tracking, result archival, and collaborative research workflows._

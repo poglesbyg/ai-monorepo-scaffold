@@ -1,8 +1,8 @@
 {
-  "name": "@app/db",
+  "name": "@seqconsult/db",
   "type": "module",
-  "version": "0.0.1",
-  "description": "Database package for the app",
+  "version": "1.0.0",
+  "description": "Database package for the Sequencing Facility Consultant",
   "main": "index.ts",
   "exports": {
     ".": "./src/index.ts",

@@ -1,37 +1,54 @@
 ---
-description: Documents the smart polling system for dynamic request frequency adjustment based on user activity state
-globs: **/smart-polling-provider.tsx,**/use-smart-polling.ts
+description: Technical documentation for implementing dynamic polling intervals based on user activity state
+globs: **/smart-polling-provider.tsx,**/use-smart-polling.ts,**/components/providers/*
 alwaysApply: false
 ---
 
 
-# smart-polling
+# Smart Polling
 
-The smart polling system implements adaptive request frequency based on user activity states:
+The smart polling system implements dynamic polling interval adjustments based on user activity states through a React context provider.
 
-### Core Polling Logic
-- Located in `apps/web/src/components/providers/smart-polling-provider.tsx`
-- Implements three distinct polling intervals:
-  - Active: 15 seconds (when user is actively engaged)
-  - Inactive: 60 seconds (when user is idle)
-  - Background: 120 seconds (when app is minimized/backgrounded)
+## Core Components
 
-### Activity State Management
-- Located in `apps/web/src/hooks/use-smart-polling.ts`
-- Tracks user activity through:
-  - Document visibility state
-  - Window focus events
-  - User interaction timestamps
-- Dynamically adjusts polling frequency based on detected state changes
+### Smart Polling Provider
+**File Path:** `/apps/web/src/components/providers/smart-polling-provider.tsx`
 
-### Integration Points
-The polling provider exposes context values consumed by application components to:
-- Access current polling interval
-- Monitor activity state changes
-- Override default intervals when needed
-- Trigger manual poll requests
+Manages activity state and polling intervals with three distinct modes:
+- Active: Default polling mode during user interaction
+- Inactive: Reduced polling frequency when user is idle
+- Background: Minimal polling when tab/window is not focused
 
-Importance Score: 85 - Critical for optimizing server load while maintaining data freshness based on actual usage patterns
+### Smart Polling Hook
+**File Path:** `/apps/web/src/hooks/use-smart-polling.ts`
+
+Exposes polling configuration and state management:
+- Activity state tracking
+- Interval adjustment logic
+- Integration with React Query operations
+
+## State Management
+
+Activity states determine polling behavior:
+1. Active State: Normal application interaction
+2. Inactive State: No user activity detected
+3. Background State: Browser tab/window not focused
+
+## Interval Calculations
+
+Polling intervals are dynamically adjusted based on:
+- Current activity state
+- Time since last user interaction
+- Browser visibility state
+- Custom thresholds per feature
+
+## Activity Detection
+
+Monitors user activity through:
+- Mouse movements
+- Keyboard interactions 
+- Focus/blur events
+- Visibility change events
 
 $END$
 

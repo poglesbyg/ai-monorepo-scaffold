@@ -1,4 +1,4 @@
-import type { DB, User } from '@app/db/types'
+import type { DB, User } from '@seqconsult/db/types'
 // Define a placeholder Session type based on better-auth structure
 // You might need to refine this based on the actual structure
 import type { Kysely, Selectable } from 'kysely'

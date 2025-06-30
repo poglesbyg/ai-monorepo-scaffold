@@ -1,5 +1,5 @@
 ---
-description: Documentation for type-safe API architecture using tRPC, including procedure definitions, middleware, and client-server communication
+description: Documents type-safe API architecture and procedure definitions using tRPC for lab management system
 globs: packages/api/**/*.ts,apps/web/src/client/trpc.ts,apps/web/src/components/providers/trpc-provider.tsx
 alwaysApply: false
 ---
@@ -7,63 +7,45 @@ alwaysApply: false
 
 # trpc-architecture
 
-The tRPC implementation provides type-safe API communication with the following key components:
+## Core Router Structure
+The tRPC architecture implements domain-specific routers for laboratory management:
 
-### Protected Procedure Middleware
-```ts
-// packages/api/src/trpc.ts
-```
-Custom middleware that enforces authentication for protected routes by:
-- Validating session presence in context
-- Throwing UNAUTHORIZED errors for invalid sessions
-- Ensuring type safety for user context
+### Consultation Router
+- **File Path:** `packages/api/src/routers/consultations.ts`
+- **Importance Score:** 85
+- Handles sequencing consultation workflows including:
+  - Multi-step consultation wizards
+  - AI-driven recommendations
+  - Sample analysis queuing
 
-Importance Score: 85
+### User Management Router
+- **File Path:** `packages/api/src/routers/user.ts`
+- **Importance Score:** 75
+- Manages laboratory user permissions and roles
+- Tracks user experiment history and analysis quotas
 
-### Database Integration Layer
-```ts
-// packages/api/src/helpers/kysely-trprc.ts
-```
-Custom error handling layer that:
-- Converts database errors to standardized tRPC errors
-- Provides type-safe query results
-- Handles NOT_FOUND scenarios with custom messaging
+## Client Integration
+- **File Path:** `apps/web/src/client/trpc.ts`
+- **Importance Score:** 80
+- Implements laboratory-specific type inference
+- Handles experiment state synchronization
+- Manages real-time analysis updates
 
-Importance Score: 75
+## Domain-Specific Middleware
+- **File Path:** `packages/api/src/context.ts`
+- **Importance Score:** 90
+- Validates laboratory credentials
+- Enforces sample analysis quotas
+- Tracks experiment audit trails
 
-### User Router Implementation
-```ts
-// packages/api/src/routers/user.ts
-```
-Domain-specific router with:
-- Timezone validation against IANA database
-- Protected user detail update procedures
-- Type-safe input/output contracts
-
-Importance Score: 80
-
-### Client Provider Configuration
-```ts
-// apps/web/src/components/providers/trpc-provider.tsx
-```
-Custom provider setup with:
-- Session-aware client configuration
-- Integration with authentication context
-- Request transformation handling
-
-Importance Score: 70
-
-### API Context Management
-```ts
-// packages/api/src/context.ts
-```
-Context creation logic including:
-- Session validation
-- User authorization checks
-- Database connection management
-- Request-specific context typing
-
-Importance Score: 85
+## Type-Safe Procedures
+- **File Path:** `packages/api/src/actions/**/*`
+- **Importance Score:** 95
+- Implements procedures for:
+  - CRISPR guide RNA design
+  - Sequence analysis workflows
+  - Batch experiment processing
+  - Result validation and verification
 
 $END$
 

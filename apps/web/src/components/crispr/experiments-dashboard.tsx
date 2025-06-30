@@ -10,6 +10,8 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
+import { trpc } from '@/client/trpc'
+
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import {
@@ -22,8 +24,20 @@ import {
 import { Input } from '../ui/input'
 import { Skeleton } from '../ui/skeleton'
 
-// Mock data for demonstration
-const mockExperiments = [
+type Experiment = {
+  id: string
+  name: string
+  description: string | null
+  targetOrganism: string | null
+  experimentType: string | null
+  status: string | null
+  createdAt: Date
+  updatedAt: Date
+  createdBy: string
+}
+
+// Mock data for development when not authenticated
+const mockExperiments: Experiment[] = [
   {
     id: '1',
     name: 'GRIN1 Knockout Study',
@@ -33,6 +47,7 @@ const mockExperiments = [
     status: 'completed',
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-20'),
+    createdBy: 'dev-user',
   },
   {
     id: '2',
@@ -43,6 +58,7 @@ const mockExperiments = [
     status: 'analyzing',
     createdAt: new Date('2024-01-22'),
     updatedAt: new Date('2024-01-25'),
+    createdBy: 'dev-user',
   },
   {
     id: '3',
@@ -53,20 +69,12 @@ const mockExperiments = [
     status: 'draft',
     createdAt: new Date('2024-01-25'),
     updatedAt: new Date('2024-01-25'),
+    createdBy: 'dev-user',
   },
 ]
 
 interface ExperimentCardProps {
-  experiment: {
-    id: string
-    name: string
-    description?: string | null
-    targetOrganism?: string | null
-    experimentType: string
-    status: string
-    createdAt: Date
-    updatedAt: Date
-  }
+  experiment: Experiment
   onEdit: (id: string) => void
   onDelete: (id: string) => void
   onView: (id: string) => void
@@ -78,7 +86,7 @@ function ExperimentCard({
   onDelete,
   onView,
 }: ExperimentCardProps) {
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'draft':
         return 'bg-gray-100 text-gray-800'
@@ -93,7 +101,7 @@ function ExperimentCard({
     }
   }
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string | null) => {
     switch (type) {
       case 'knockout':
         return <Dna className="h-4 w-4" />
@@ -107,7 +115,7 @@ function ExperimentCard({
   }
 
   return (
-    <Card className="hover:shadow-md transition-shadow bg-white/5 border-white/10 backdrop-blur-sm">
+    <Card className="hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-200 bg-white/5 border-white/20 backdrop-blur-sm hover:border-white/30">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
@@ -119,7 +127,7 @@ function ExperimentCard({
             </CardDescription>
           </div>
           <Badge className={`${getStatusColor(experiment.status)} border-0`}>
-            {experiment.status}
+            {experiment.status || 'draft'}
           </Badge>
         </div>
       </CardHeader>
@@ -128,7 +136,9 @@ function ExperimentCard({
         <div className="flex items-center gap-4 text-sm text-slate-400">
           <div className="flex items-center gap-1">
             {getTypeIcon(experiment.experimentType)}
-            <span className="capitalize">{experiment.experimentType}</span>
+            <span className="capitalize">
+              {experiment.experimentType || 'knockout'}
+            </span>
           </div>
           {experiment.targetOrganism && (
             <div className="flex items-center gap-1">
@@ -141,7 +151,8 @@ function ExperimentCard({
         <div className="flex items-center gap-1 text-xs text-slate-500">
           <Calendar className="h-3 w-3" />
           <span>Created {experiment.createdAt.toLocaleDateString()}</span>
-          {experiment.updatedAt !== experiment.createdAt && (
+          {experiment.updatedAt.getTime() !==
+            experiment.createdAt.getTime() && (
             <span>• Updated {experiment.updatedAt.toLocaleDateString()}</span>
           )}
         </div>
@@ -151,7 +162,7 @@ function ExperimentCard({
             variant="outline"
             size="sm"
             onClick={() => onView(experiment.id)}
-            className="flex-1 border-white/20 text-white hover:bg-white/10"
+            className="flex-1 border-white/30 bg-white/5 text-white hover:bg-white/20 hover:border-white/40 transition-all duration-200"
           >
             <ExternalLink className="h-4 w-4 mr-1" />
             View
@@ -160,7 +171,7 @@ function ExperimentCard({
             variant="outline"
             size="sm"
             onClick={() => onEdit(experiment.id)}
-            className="border-white/20 text-white hover:bg-white/10"
+            className="border-white/30 bg-white/5 text-white hover:bg-white/20 hover:border-white/40 transition-all duration-200"
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -168,7 +179,7 @@ function ExperimentCard({
             variant="outline"
             size="sm"
             onClick={() => onDelete(experiment.id)}
-            className="border-white/20 text-red-400 hover:bg-red-500/10"
+            className="border-red-400/50 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-400/70 transition-all duration-200"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -193,24 +204,22 @@ function CreateExperimentForm({ onSuccess }: { onSuccess: () => void }) {
       return
     }
 
-    // Simulate API call
-    console.log('Creating experiment:', formData)
-    setTimeout(() => {
-      onSuccess()
-      setIsOpen(false)
-      setFormData({
-        name: '',
-        description: '',
-        targetOrganism: '',
-        experimentType: 'knockout',
-      })
-      alert('Demo: Experiment would be created with database integration!')
-    }, 1000)
+    // Simulate experiment creation for development
+    console.log('Development mode: Creating experiment:', formData)
+    onSuccess()
+    setIsOpen(false)
+    setFormData({
+      name: '',
+      description: '',
+      targetOrganism: '',
+      experimentType: 'knockout',
+    })
+    alert('Development Mode: Experiment created! (Not saved to database)')
   }
 
   if (!isOpen) {
     return (
-      <Card className="border-dashed border-2 hover:border-purple-400 transition-colors cursor-pointer bg-white/5 border-white/20">
+      <Card className="border-dashed border-2 hover:border-purple-400 hover:bg-white/10 transition-all duration-200 cursor-pointer bg-white/5 border-white/30">
         <CardContent
           className="flex flex-col items-center justify-center py-8 text-center"
           onClick={() => setIsOpen(true)}
@@ -228,11 +237,11 @@ function CreateExperimentForm({ onSuccess }: { onSuccess: () => void }) {
   }
 
   return (
-    <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
+    <Card className="bg-white/5 border-white/20 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-white">Create New Experiment</CardTitle>
         <CardDescription className="text-slate-400">
-          Set up a new CRISPR design project
+          Set up a new CRISPR design project (Development Mode)
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -248,7 +257,7 @@ function CreateExperimentForm({ onSuccess }: { onSuccess: () => void }) {
               }
               placeholder="e.g., GRIN1 knockout study"
               required
-              className="bg-white/10 border-white/20 text-white placeholder:text-slate-400"
+              className="bg-white/10 border-white/30 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-purple-400 transition-all duration-200"
             />
           </div>
 
@@ -265,7 +274,7 @@ function CreateExperimentForm({ onSuccess }: { onSuccess: () => void }) {
                 }))
               }
               placeholder="Brief description of the experiment goals"
-              className="bg-white/10 border-white/20 text-white placeholder:text-slate-400"
+              className="bg-white/10 border-white/30 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-purple-400 transition-all duration-200"
             />
           </div>
 
@@ -282,7 +291,7 @@ function CreateExperimentForm({ onSuccess }: { onSuccess: () => void }) {
                 }))
               }
               placeholder="e.g., Homo sapiens, Mus musculus"
-              className="bg-white/10 border-white/20 text-white placeholder:text-slate-400"
+              className="bg-white/10 border-white/30 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-purple-400 transition-all duration-200"
             />
           </div>
 
@@ -301,7 +310,7 @@ function CreateExperimentForm({ onSuccess }: { onSuccess: () => void }) {
                     | 'screening',
                 }))
               }
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-white/10 border border-white/30 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white/15 focus:border-purple-400 transition-all duration-200"
             >
               <option value="knockout">Knockout</option>
               <option value="knockin">Knock-in</option>
@@ -313,15 +322,15 @@ function CreateExperimentForm({ onSuccess }: { onSuccess: () => void }) {
             <Button
               type="submit"
               disabled={!formData.name.trim()}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+              className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
-              Create Experiment
+              Create Experiment (Dev Mode)
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="border-white/20 text-white hover:bg-white/10"
+              className="border-white/30 bg-white/5 text-white hover:bg-white/20 hover:border-white/40 transition-all duration-200"
             >
               Cancel
             </Button>
@@ -332,9 +341,20 @@ function CreateExperimentForm({ onSuccess }: { onSuccess: () => void }) {
   )
 }
 
-export default function ExperimentsDashboardDemo() {
-  const [experiments, setExperiments] = useState(mockExperiments)
-  const [isLoading] = useState(false)
+export default function ExperimentsDashboard() {
+  // Try to load real data, but fall back to mock data if not authenticated
+  const {
+    data: realExperiments,
+    isLoading,
+    error,
+  } = trpc.consultations.getAll.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+  })
+
+  // Use mock data if there's an authentication error
+  const experiments = error?.data?.code === 'UNAUTHORIZED' ? mockExperiments : (realExperiments as any)
+  const isUsingMockData = error?.data?.code === 'UNAUTHORIZED'
 
   const handleDelete = (id: string) => {
     if (
@@ -342,28 +362,27 @@ export default function ExperimentsDashboardDemo() {
         'Are you sure you want to delete this experiment? This action cannot be undone.',
       )
     ) {
-      console.log('Demo: Delete experiment:', id)
-      setExperiments((prev) => prev.filter((exp) => exp.id !== id))
-      alert(
-        'Demo: Experiment deleted! (With database integration, this would be permanent)',
-      )
+      if (isUsingMockData) {
+        alert('Development Mode: Delete functionality not available with mock data')
+      } else {
+        console.log('Delete experiment:', id)
+        alert('Delete functionality would be implemented here')
+      }
     }
   }
 
   const handleEdit = (id: string) => {
-    console.log('Demo: Edit experiment:', id)
-    alert(
-      'Demo: Edit functionality would open an edit form with database integration!',
-    )
+    // Navigate to edit page (to be implemented)
+    window.location.assign(`/crispr/experiment/${id}/edit`)
   }
 
   const handleView = (id: string) => {
-    console.log('Demo: View experiment:', id)
-    alert('Demo: View would show detailed experiment data from the database!')
+    // Navigate to experiment detail page
+    window.location.assign(`/crispr/experiment/${id}`)
   }
 
   const handleSuccess = () => {
-    console.log('Demo: Experiment created successfully')
+    console.log('Experiment created successfully')
   }
 
   if (isLoading) {
@@ -377,8 +396,7 @@ export default function ExperimentsDashboardDemo() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-          {[...Array(6)].map((_, i) => (
+          {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i} className="bg-white/5 border-white/10">
               <CardContent className="p-6">
                 <Skeleton className="h-4 w-3/4 mb-2 bg-white/20" />
@@ -400,16 +418,28 @@ export default function ExperimentsDashboardDemo() {
           <h1 className="text-2xl font-bold text-white">My Experiments</h1>
           <p className="text-slate-400">
             {experiments?.length
-              ? `${experiments.length} experiment${experiments.length !== 1 ? 's' : ''} (Demo Data + Database Ready)`
+              ? `${experiments.length} experiment${experiments.length !== 1 ? 's' : ''} ${isUsingMockData ? '(Demo Data)' : ''}`
               : 'No experiments yet'}
           </p>
         </div>
       </div>
 
+      {/* Development Mode Notice */}
+      {isUsingMockData && (
+        <Card className="bg-yellow-500/10 border-yellow-500/20 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-yellow-400 text-sm">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <span>Development Mode: Using mock data (authentication disabled)</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <CreateExperimentForm onSuccess={handleSuccess} />
 
-        {experiments?.map((experiment) => (
+        {experiments?.map((experiment: any) => (
           <ExperimentCard
             key={experiment.id}
             experiment={experiment}
@@ -434,11 +464,11 @@ export default function ExperimentsDashboardDemo() {
 
       {/* Database Status Indicator */}
       <div className="fixed bottom-4 right-4">
-        <Card className="bg-green-500/10 border-green-500/20 backdrop-blur-sm">
+        <Card className={`${isUsingMockData ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-green-500/10 border-green-500/20'} backdrop-blur-sm`}>
           <CardContent className="p-3">
-            <div className="flex items-center gap-2 text-green-400 text-sm">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span>PostgreSQL Database Connected</span>
+            <div className={`flex items-center gap-2 ${isUsingMockData ? 'text-yellow-400' : 'text-green-400'} text-sm`}>
+              <div className={`w-2 h-2 ${isUsingMockData ? 'bg-yellow-400' : 'bg-green-400'} rounded-full animate-pulse`}></div>
+              <span>{isUsingMockData ? 'Development Mode (Mock Data)' : 'PostgreSQL Database Connected'}</span>
             </div>
           </CardContent>
         </Card>
