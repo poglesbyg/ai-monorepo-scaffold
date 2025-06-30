@@ -60,6 +60,8 @@ spec:
             configMapKeyRef:
               name: sequencing-consultant-config
               key: site-base-url
+        - name: OLLAMA_HOST
+          value: "http://ollama:11434"
         resources:
           requests:
             memory: "128Mi"

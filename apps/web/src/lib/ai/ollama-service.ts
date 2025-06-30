@@ -1,7 +1,12 @@
 import { Ollama } from 'ollama'
 
+// Get Ollama host from environment variable or use default
+// In OpenShift, this will be set to http://ollama:11434
+// @ts-ignore - process.env available in server context
+const OLLAMA_HOST = typeof process !== 'undefined' && process.env?.OLLAMA_HOST || 'http://localhost:11434'
+
 // Initialize Ollama client
-const ollama = new Ollama({ host: 'http://localhost:11434' })
+const ollama = new Ollama({ host: OLLAMA_HOST })
 
 export interface AIAnalysisResult {
   analysis: string

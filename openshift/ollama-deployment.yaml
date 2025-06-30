@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  labels:
+    app: sequencing-consultant
+    component: ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sequencing-consultant
+      component: ai
+  template:
+    metadata:
+      labels:
+        app: sequencing-consultant
+        component: ai
+    spec:
+      containers:
+      - name: ollama
+        image: ollama/ollama:latest
+        ports:
+        - containerPort: 11434
+          protocol: TCP
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0"
+        - name: OLLAMA_MODELS
+          value: "/models"
+        - name: OLLAMA_KEEP_ALIVE
+          value: "5m"
+        volumeMounts:
+        - name: ollama-storage
+          mountPath: /models
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        readinessProbe:
+          httpGet:
+            path: /api/tags
+            port: 11434
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /api/tags
+            port: 11434
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      initContainers:
+      - name: model-downloader
+        image: ollama/ollama:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Starting Ollama service for model download..."
+          ollama serve &
+          OLLAMA_PID=$!
+          
+          echo "Waiting for Ollama to be ready..."
+          until curl -s http://localhost:11434/api/tags > /dev/null; do
+            echo "Waiting for Ollama..."
+            sleep 2
+          done
+          
+          echo "Checking if model exists..."
+          if ! ollama list | grep -q "llama3"; then
+            echo "Downloading llama3.2:3b model (smaller for OpenShift)..."
+            ollama pull llama3.2:3b || {
+              echo "Failed to download llama3.2:3b, trying llama3:7b..."
+              ollama pull llama3:7b || {
+                echo "Failed to download model, continuing anyway..."
+              }
+            }
+          else
+            echo "Model already exists"
+          fi
+          
+          echo "Stopping Ollama service..."
+          kill $OLLAMA_PID
+          echo "Model setup complete"
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0"
+        - name: OLLAMA_MODELS
+          value: "/models"
+        volumeMounts:
+        - name: ollama-storage
+          mountPath: /models
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+      volumes:
+      - name: ollama-storage
+        persistentVolumeClaim:
+          claimName: ollama-models-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  labels:
+    app: sequencing-consultant
+    component: ai
+spec:
+  ports:
+  - name: http
+    port: 11434
+    protocol: TCP
+    targetPort: 11434
+  selector:
+    app: sequencing-consultant
+    component: ai
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-models-pvc
+  labels:
+    app: sequencing-consultant
+    component: ai
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi 

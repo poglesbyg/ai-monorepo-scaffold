@@ -172,6 +172,103 @@ POD=$(oc get pods -l app=sequencing-consultant,component=web -o jsonpath='{.item
 oc exec $POD -- sh -c "cd packages/db && npm run db:migrate"
 ```
 
+## Deploying with AI Integration
+
+The application includes an optional AI consultation feature powered by Ollama. This provides intelligent recommendations and interactive chat capabilities.
+
+### Quick AI Deployment
+
+Use the provided deployment script:
+
+```bash
+# Make the script executable
+chmod +x openshift/deploy-with-ai.sh
+
+# Run the deployment
+./openshift/deploy-with-ai.sh
+```
+
+This script will:
+- Deploy Ollama AI service with automatic model downloading
+- Configure persistent storage for AI models
+- Set up service communication between the app and AI
+- Handle all the deployment steps automatically
+
+### Manual AI Deployment
+
+If you prefer to deploy manually:
+
+```bash
+# 1. Deploy Ollama service
+oc apply -f openshift/ollama-deployment.yaml
+
+# 2. Wait for Ollama to be ready
+oc rollout status deployment/ollama
+
+# 3. Update the main deployment with AI host
+# (Already included in deployment.yaml)
+
+# 4. Restart the app to use AI
+oc rollout restart deployment/sequencing-consultant-web
+```
+
+### AI Resource Requirements
+
+The Ollama deployment requires:
+- **Memory**: 2-4GB RAM (depending on model size)
+- **CPU**: 1-2 cores
+- **Storage**: 10GB PVC for model storage
+- **Model**: llama3.2:3b (3GB) or llama3:7b (7GB)
+
+### Monitoring AI Service
+
+```bash
+# Check Ollama pod status
+oc get pods -l component=ai
+
+# View Ollama logs
+oc logs deployment/ollama
+
+# Test AI endpoint from within cluster
+oc exec deployment/ollama -- curl http://localhost:11434/api/tags
+
+# Check model download progress
+oc logs deployment/ollama -c model-downloader
+```
+
+### AI Troubleshooting
+
+If AI features aren't working:
+
+1. **Check Ollama is running:**
+   ```bash
+   oc get deployment ollama
+   ```
+
+2. **Verify model is downloaded:**
+   ```bash
+   oc exec deployment/ollama -- ollama list
+   ```
+
+3. **Test connectivity from app:**
+   ```bash
+   POD=$(oc get pods -l component=web -o jsonpath='{.items[0].metadata.name}')
+   oc exec $POD -- curl http://ollama:11434/api/tags
+   ```
+
+4. **Check resource usage:**
+   ```bash
+   oc describe pod -l component=ai
+   ```
+
+### Disabling AI Features
+
+If you don't want to use AI features:
+
+1. Don't deploy `ollama-deployment.yaml`
+2. The app will automatically use fallback algorithms
+3. Users will see a notice that AI is not available
+
 ## Monitoring and Troubleshooting
 
 ### Check Application Logs
