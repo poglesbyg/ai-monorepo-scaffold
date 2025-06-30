@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Bot, Send, Loader2 } from 'lucide-react'
+import { Bot, Send, Loader2, AlertCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { Badge } from '../../ui/badge'
@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../ui/input'
 import { ScrollArea } from '../../ui/scroll-area'
 import type { ConsultationData } from '../consultation-wizard'
+import { aiService, type SequencingRecommendation } from '../../../lib/ai/ollama-service'
 
 interface AIConsultationStepProps {
   data: ConsultationData
@@ -19,28 +20,25 @@ interface ChatMessage {
   content: string
 }
 
-interface ServiceRecommendation {
-  serviceCode: string
-  serviceName: string
-  category: string
-  reason: string
-  confidence: number
-  estimatedCost?: number
-  priority: 'essential' | 'recommended' | 'optional'
-}
-
 export function AIConsultationStep({ data, updateData }: AIConsultationStepProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [recommendations, setRecommendations] = useState<ServiceRecommendation[]>([])
+  const [recommendations, setRecommendations] = useState<SequencingRecommendation[]>([])
+  const [aiAvailable, setAiAvailable] = useState(true)
 
   // Initialize AI consultation when component mounts
   useEffect(() => {
     if (messages.length === 0) {
+      checkAIAvailability()
       startConsultation()
     }
   }, [])
+
+  const checkAIAvailability = async () => {
+    const available = await aiService.initialize()
+    setAiAvailable(available)
+  }
 
   const startConsultation = async () => {
     setIsLoading(true)
@@ -59,42 +57,52 @@ Let me analyze your project:
 - Timeline: ${data.timeline || 'Not specified'}
 - Budget: ${data.budgetRange || 'Not specified'}
 
-I have some initial recommendations based on your project details. Would you like me to explain any of these services in more detail, or do you have specific questions about your experimental design?`
+I'm now analyzing your project requirements to provide personalized recommendations...`
     }
 
     setMessages([initialMessage])
 
-    // Simulate AI generating recommendations
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    try {
+      // Get AI recommendations
+      const aiRecommendations = await aiService.generateSequencingRecommendations(data)
+      
+      setRecommendations(aiRecommendations)
+      updateData({ recommendedServices: aiRecommendations })
 
-    const mockRecommendations: ServiceRecommendation[] = [
-      {
-        serviceCode: 'RNA_SEQ',
-        serviceName: 'RNA Sequencing',
-        category: 'RNA Sequencing',
-        reason: 'Based on your project description, RNA-seq will provide comprehensive gene expression profiling for your samples.',
-        confidence: 0.95,
-        estimatedCost: data.numberOfSamples ? data.numberOfSamples * 450 : undefined,
-        priority: 'essential'
-      },
-      {
-        serviceCode: 'SINGLE_CELL_RNA',
-        serviceName: 'Single Cell RNA-Seq',
-        category: 'RNA Sequencing',
-        reason: 'If you need cell-type-specific expression profiles, single-cell RNA-seq might be valuable for your research.',
-        confidence: 0.70,
-        estimatedCost: 2500,
-        priority: 'optional'
+      // Add follow-up message
+      const followUpMessage: ChatMessage = {
+        role: 'assistant',
+        content: `Based on my analysis, I've identified ${aiRecommendations.length} sequencing services that would be suitable for your project. 
+
+The recommendations are sorted by priority and confidence level. Each service includes an estimated cost based on your sample size${data.numberOfSamples && data.numberOfSamples >= 20 ? ' (with volume discount applied)' : ''}.
+
+Do you have any questions about these recommendations? I can explain:
+- Why each service was recommended
+- Sample preparation requirements
+- Expected timelines and deliverables
+- Cost optimization strategies
+- Alternative approaches
+
+Feel free to ask me anything about your sequencing project!`
       }
-    ]
 
-    setRecommendations(mockRecommendations)
-    updateData({ recommendedServices: mockRecommendations })
+      setMessages(prev => [...prev, followUpMessage])
+    } catch (error) {
+      console.error('Failed to get recommendations:', error)
+      
+      const errorMessage: ChatMessage = {
+        role: 'assistant',
+        content: 'I encountered an issue while analyzing your project. However, I can still provide recommendations based on your project details. Please feel free to ask any questions about sequencing services.'
+      }
+      
+      setMessages(prev => [...prev, errorMessage])
+    }
+
     setIsLoading(false)
   }
 
   const sendMessage = async () => {
-    if (!input.trim() || isLoading) {return}
+    if (!input.trim() || isLoading) return
 
     const userMessage: ChatMessage = {
       role: 'user',
@@ -105,17 +113,27 @@ I have some initial recommendations based on your project details. Would you lik
     setInput('')
     setIsLoading(true)
 
-    // Simulate AI response
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      // Get AI response
+      const aiResponse = await aiService.answerSequencingQuestion(input, data)
 
-    const aiResponse: ChatMessage = {
-      role: 'assistant',
-      content: `Thank you for your question. Based on your inquiry about "${input}", I can provide some additional insights...
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: aiResponse
+      }
 
-[This is a simulated response. In a real implementation, this would connect to an AI service to provide detailed, context-aware responses about sequencing services, experimental design, and recommendations.]`
+      setMessages(prev => [...prev, assistantMessage])
+    } catch (error) {
+      console.error('Failed to get AI response:', error)
+      
+      const errorMessage: ChatMessage = {
+        role: 'assistant',
+        content: 'I apologize, but I encountered an issue processing your question. Please try rephrasing it, or feel free to contact our technical support team directly for assistance.'
+      }
+      
+      setMessages(prev => [...prev, errorMessage])
     }
 
-    setMessages(prev => [...prev, aiResponse])
     setIsLoading(false)
   }
 
@@ -127,9 +145,35 @@ I have some initial recommendations based on your project details. Would you lik
 
   return (
     <div className="space-y-4">
+      {/* AI Status */}
+      {!aiAvailable && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-yellow-600" />
+              AI Running in Fallback Mode
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-yellow-800">
+              Ollama AI is not currently available. Recommendations are being generated using advanced pattern matching algorithms. 
+              For enhanced AI capabilities, ensure Ollama is running locally.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recommendations */}
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold">Recommended Services</h3>
+        <h3 className="text-lg font-semibold">Recommended Sequencing Services</h3>
+        {recommendations.length === 0 && isLoading && (
+          <Card>
+            <CardContent className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              <span className="ml-2 text-gray-500">Analyzing your project requirements...</span>
+            </CardContent>
+          </Card>
+        )}
         {recommendations.map((rec, index) => (
           <motion.div
             key={rec.serviceCode}
@@ -159,6 +203,9 @@ I have some initial recommendations based on your project details. Would you lik
                 {rec.estimatedCost && (
                   <p className="text-sm font-medium">
                     Estimated cost: ${rec.estimatedCost.toLocaleString()}
+                    {data.numberOfSamples && data.numberOfSamples >= 20 && (
+                      <span className="text-green-600 ml-1">(volume discount applied)</span>
+                    )}
                   </p>
                 )}
               </CardContent>

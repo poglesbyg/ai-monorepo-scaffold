@@ -6,7 +6,7 @@ metadata:
     app: sequencing-consultant
     component: web
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: sequencing-consultant
@@ -62,11 +62,11 @@ spec:
               key: site-base-url
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "100m"
+            memory: "128Mi"
+            cpu: "60m"
           limits:
-            memory: "512Mi"
-            cpu: "500m"
+            memory: "256Mi"
+            cpu: "250m"
         livenessProbe:
           httpGet:
             path: /

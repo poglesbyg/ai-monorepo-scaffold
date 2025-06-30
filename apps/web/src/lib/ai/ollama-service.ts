@@ -24,6 +24,16 @@ export interface ExperimentSuggestion {
   priority: 'high' | 'medium' | 'low'
 }
 
+export interface SequencingRecommendation {
+  serviceCode: string
+  serviceName: string
+  category: string
+  reason: string
+  confidence: number
+  estimatedCost?: number
+  priority: 'essential' | 'recommended' | 'optional'
+}
+
 class OllamaService {
   private model = 'llama3.1:latest' // Default model, can be configured
   private isAvailable = false
@@ -249,6 +259,110 @@ Be specific and actionable when possible.
     }
   }
 
+  async generateSequencingRecommendations(consultationData: any): Promise<SequencingRecommendation[]> {
+    if (!this.isAvailable) {
+      return this.getFallbackSequencingRecommendations(consultationData)
+    }
+
+    try {
+      const prompt = `
+As a high-throughput sequencing facility consultant, analyze this research project and recommend appropriate sequencing services:
+
+Project Details:
+- Title: ${consultationData.projectTitle}
+- Description: ${consultationData.projectDescription}
+- Research Area: ${consultationData.researchArea || 'Not specified'}
+- Objectives: ${consultationData.objectives || 'Not specified'}
+- Organism: ${consultationData.organism || 'Not specified'}
+- Sample Type: ${consultationData.sampleType || 'Not specified'}
+- Number of Samples: ${consultationData.numberOfSamples || 'Not specified'}
+- Timeline: ${consultationData.timeline || 'Not specified'}
+- Budget Range: ${consultationData.budgetRange || 'Not specified'}
+
+Available Services:
+1. RNA_SEQ - RNA Sequencing for gene expression analysis
+2. WGS - Whole Genome Sequencing for variant discovery
+3. CHIP_SEQ - ChIP-Seq for protein-DNA interactions
+4. SINGLE_CELL_RNA - Single Cell RNA-Seq for cell-type profiling
+5. ATAC_SEQ - ATAC-Seq for chromatin accessibility
+6. LONG_READ_DNA - Long-Read DNA Sequencing for structural variants
+
+For each recommended service, provide:
+- serviceCode (from the available services)
+- serviceName
+- category
+- detailed reason why this service is suitable
+- confidence (0-1)
+- priority (essential/recommended/optional)
+
+Respond in JSON format as an array of recommendation objects.
+`
+
+      const response = await ollama.generate({
+        model: this.workingModel || this.model,
+        prompt,
+        stream: false,
+        options: {
+          temperature: 0.7,
+          top_p: 0.9,
+        }
+      })
+
+      return this.parseSequencingRecommendations(response.response, consultationData)
+    } catch (error) {
+      console.error('AI sequencing recommendations failed:', error)
+      return this.getFallbackSequencingRecommendations(consultationData)
+    }
+  }
+
+  async answerSequencingQuestion(question: string, consultationData: any): Promise<string> {
+    if (!this.isAvailable) {
+      return this.getFallbackSequencingAnswer(question, consultationData)
+    }
+
+    try {
+      const prompt = `
+As a high-throughput sequencing facility consultant, answer this question from a principal investigator:
+
+Question: ${question}
+
+Project Context:
+- Project: ${consultationData.projectTitle}
+- Research Area: ${consultationData.researchArea || 'Not specified'}
+- Organism: ${consultationData.organism || 'Not specified'}
+- Sample Type: ${consultationData.sampleType || 'Not specified'}
+- Number of Samples: ${consultationData.numberOfSamples || 'Not specified'}
+- Timeline: ${consultationData.timeline || 'Not specified'}
+- Budget: ${consultationData.budgetRange || 'Not specified'}
+
+Provide a clear, helpful, and technically accurate answer. Consider:
+- Sequencing platform selection
+- Sample preparation requirements
+- Quality control measures
+- Cost optimization strategies
+- Timeline considerations
+- Data analysis requirements
+
+Be specific and actionable in your recommendations.
+`
+
+      const response = await ollama.generate({
+        model: this.workingModel || this.model,
+        prompt,
+        stream: false,
+        options: {
+          temperature: 0.7,
+          top_p: 0.9,
+        }
+      })
+
+      return response.response
+    } catch (error) {
+      console.error('AI sequencing Q&A failed:', error)
+      return this.getFallbackSequencingAnswer(question, consultationData)
+    }
+  }
+
   private parseAIResponse(response: string, _type: string): AIAnalysisResult {
     try {
       const parsed = JSON.parse(response)
@@ -302,6 +416,50 @@ Be specific and actionable when possible.
     }
     
     return this.getFallbackExperimentSuggestions('general')
+  }
+
+  private parseSequencingRecommendations(response: string, consultationData: any): SequencingRecommendation[] {
+    try {
+      const parsed = JSON.parse(response)
+      if (Array.isArray(parsed)) {
+        return parsed.map(item => ({
+          serviceCode: item.serviceCode || 'RNA_SEQ',
+          serviceName: item.serviceName || 'Unknown Service',
+          category: item.category || 'General Sequencing',
+          reason: item.reason || 'Recommended based on project requirements',
+          confidence: typeof item.confidence === 'number' ? item.confidence : 0.7,
+          priority: ['essential', 'recommended', 'optional'].includes(item.priority) ? item.priority : 'recommended',
+          estimatedCost: consultationData.numberOfSamples ? this.estimateCost(item.serviceCode, consultationData.numberOfSamples) : undefined
+        }))
+      }
+    } catch {
+      // Fallback handled below
+    }
+    
+    return this.getFallbackSequencingRecommendations(consultationData)
+  }
+
+  private estimateCost(serviceCode: string, numberOfSamples: number): number {
+    const basePrices: { [key: string]: number } = {
+      'RNA_SEQ': 450,
+      'WGS': 800,
+      'CHIP_SEQ': 550,
+      'SINGLE_CELL_RNA': 2500,
+      'ATAC_SEQ': 600,
+      'LONG_READ_DNA': 1200
+    }
+    
+    const basePrice = basePrices[serviceCode] || 500
+    let totalCost = basePrice * numberOfSamples
+    
+    // Apply volume discounts
+    if (numberOfSamples >= 50) {
+      totalCost *= 0.8 // 20% discount
+    } else if (numberOfSamples >= 20) {
+      totalCost *= 0.9 // 10% discount
+    }
+    
+    return Math.round(totalCost)
   }
 
   // Fallback methods for when AI is not available
@@ -459,6 +617,204 @@ Be specific and actionable when possible.
 
   private getFallbackAnswer(question: string): string {
     return `I'd be happy to help with your CRISPR question: "${question}". However, the AI assistant is currently not available. Please check that Ollama is running locally, or consult CRISPR documentation and literature for detailed guidance. For technical questions, consider reviewing recent publications on CRISPR methodology and best practices.`
+  }
+
+  private getFallbackSequencingRecommendations(consultationData: any): SequencingRecommendation[] {
+    const recommendations: SequencingRecommendation[] = []
+    
+    // Analyze the project data to make intelligent recommendations
+    const projectText = `${consultationData.projectTitle} ${consultationData.projectDescription} ${consultationData.objectives}`.toLowerCase()
+    const researchArea = consultationData.researchArea?.toLowerCase() || ''
+    const sampleType = consultationData.sampleType?.toLowerCase() || ''
+    const organism = consultationData.organism?.toLowerCase() || ''
+    
+    // RNA-seq recommendation logic
+    if (projectText.includes('expression') || projectText.includes('transcript') || 
+        researchArea.includes('transcript') || sampleType.includes('rna')) {
+      recommendations.push({
+        serviceCode: 'RNA_SEQ',
+        serviceName: 'RNA Sequencing',
+        category: 'RNA Sequencing',
+        reason: 'RNA-seq is ideal for gene expression analysis and differential expression studies. Based on your project description, this will provide comprehensive transcriptome profiling.',
+        confidence: 0.95,
+        estimatedCost: consultationData.numberOfSamples ? this.estimateCost('RNA_SEQ', consultationData.numberOfSamples) : undefined,
+        priority: 'essential'
+      })
+    }
+    
+    // WGS recommendation logic
+    if (projectText.includes('variant') || projectText.includes('mutation') || 
+        projectText.includes('genome') || researchArea.includes('genomics')) {
+      recommendations.push({
+        serviceCode: 'WGS',
+        serviceName: 'Whole Genome Sequencing',
+        category: 'DNA Sequencing',
+        reason: 'WGS provides comprehensive variant detection across the entire genome, suitable for discovering both known and novel variants.',
+        confidence: 0.85,
+        estimatedCost: consultationData.numberOfSamples ? this.estimateCost('WGS', consultationData.numberOfSamples) : undefined,
+        priority: projectText.includes('variant') ? 'essential' : 'recommended'
+      })
+    }
+    
+    // ChIP-seq recommendation logic
+    if (projectText.includes('binding') || projectText.includes('chromatin') || 
+        projectText.includes('histone') || projectText.includes('transcription factor')) {
+      recommendations.push({
+        serviceCode: 'CHIP_SEQ',
+        serviceName: 'ChIP-Seq',
+        category: 'Epigenomics',
+        reason: 'ChIP-seq is the gold standard for mapping protein-DNA interactions and histone modifications across the genome.',
+        confidence: 0.90,
+        estimatedCost: consultationData.numberOfSamples ? this.estimateCost('CHIP_SEQ', consultationData.numberOfSamples) : undefined,
+        priority: 'essential'
+      })
+    }
+    
+    // Single-cell recommendation logic
+    if (projectText.includes('single cell') || projectText.includes('heterogeneity') || 
+        projectText.includes('cell type') || projectText.includes('subpopulation')) {
+      recommendations.push({
+        serviceCode: 'SINGLE_CELL_RNA',
+        serviceName: 'Single Cell RNA-Seq',
+        category: 'RNA Sequencing',
+        reason: 'Single-cell RNA-seq reveals cell-type-specific expression patterns and cellular heterogeneity that bulk RNA-seq might miss.',
+        confidence: 0.80,
+        estimatedCost: 2500, // Fixed cost per run
+        priority: 'recommended'
+      })
+    }
+    
+    // ATAC-seq recommendation logic
+    if (projectText.includes('accessibility') || projectText.includes('regulatory') || 
+        projectText.includes('enhancer') || researchArea.includes('epigenomic')) {
+      recommendations.push({
+        serviceCode: 'ATAC_SEQ',
+        serviceName: 'ATAC-Seq',
+        category: 'Epigenomics',
+        reason: 'ATAC-seq provides genome-wide chromatin accessibility profiling, ideal for identifying regulatory elements and understanding gene regulation.',
+        confidence: 0.75,
+        estimatedCost: consultationData.numberOfSamples ? this.estimateCost('ATAC_SEQ', consultationData.numberOfSamples) : undefined,
+        priority: 'optional'
+      })
+    }
+    
+    // Default recommendation if nothing specific matches
+    if (recommendations.length === 0) {
+      recommendations.push({
+        serviceCode: 'RNA_SEQ',
+        serviceName: 'RNA Sequencing',
+        category: 'RNA Sequencing',
+        reason: 'RNA-seq is a versatile technique that provides insights into gene expression patterns, making it suitable for a wide range of research questions.',
+        confidence: 0.60,
+        estimatedCost: consultationData.numberOfSamples ? this.estimateCost('RNA_SEQ', consultationData.numberOfSamples) : undefined,
+        priority: 'recommended'
+      })
+    }
+    
+    // Sort by confidence and priority
+    return recommendations.sort((a, b) => {
+      const priorityOrder = { essential: 3, recommended: 2, optional: 1 }
+      const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority]
+      if (priorityDiff !== 0) return priorityDiff
+      return b.confidence - a.confidence
+    })
+  }
+
+  private getFallbackSequencingAnswer(question: string, consultationData: any): string {
+    const questionLower = question.toLowerCase()
+    
+    // Common questions and contextual answers
+    if (questionLower.includes('sample') && questionLower.includes('prepar')) {
+      return `For ${consultationData.sampleType || 'your samples'}, proper preparation is crucial. Key considerations include:
+      
+1. **Quality Requirements**: RNA samples should have RIN ≥ 7, DNA should have A260/280 ratio of 1.8-2.0
+2. **Quantity**: Most services require 1-5 µg of nucleic acid, though low-input protocols are available
+3. **Storage**: Keep RNA at -80°C, DNA at -20°C or -80°C
+4. **Avoiding Degradation**: Use RNase-free techniques for RNA, avoid repeated freeze-thaw cycles
+5. **Documentation**: Label clearly with sample ID, concentration, and date
+
+Would you like specific guidance for ${consultationData.sampleType || 'your sample type'}?`
+    }
+    
+    if (questionLower.includes('cost') || questionLower.includes('budget')) {
+      const samples = consultationData.numberOfSamples || 'your'
+      return `Based on ${samples} samples and your ${consultationData.budgetRange || 'specified'} budget:
+
+**Cost Optimization Strategies**:
+1. **Batch Processing**: Running samples together reduces per-sample costs
+2. **Multiplexing**: Combine multiple samples per sequencing lane when appropriate
+3. **Coverage Optimization**: Balance coverage depth with budget constraints
+4. **Pilot Studies**: Start with fewer samples to validate approach
+5. **Grant Opportunities**: Our facility can provide support letters for funding applications
+
+Volume discounts available: 10% off for 20+ samples, 20% off for 50+ samples.
+
+Would you like a detailed quote for your specific project?`
+    }
+    
+    if (questionLower.includes('timeline') || questionLower.includes('how long')) {
+      return `Typical timelines for sequencing projects:
+
+**Standard Timeline** (${consultationData.timeline || 'flexible schedule'}):
+1. Sample QC: 2-3 business days
+2. Library Preparation: 3-5 business days
+3. Sequencing Run: 1-4 days (platform dependent)
+4. Data Delivery: 2-3 business days
+5. **Total: 2-3 weeks** from sample receipt
+
+**Expedited Service Available** (30% surcharge):
+- Rush processing can reduce timeline to 7-10 days
+
+**Factors Affecting Timeline**:
+- Sample quality and quantity
+- Service complexity
+- Current queue depth
+- Data analysis requirements
+
+Your ${consultationData.timeline} timeline appears ${consultationData.timeline === 'immediate' ? 'aggressive - let\'s discuss expedited options' : 'reasonable for standard processing'}.`
+    }
+    
+    if (questionLower.includes('data') && questionLower.includes('analysis')) {
+      return `Data analysis support for your ${consultationData.researchArea || 'research'} project:
+
+**Standard Deliverables**:
+1. Raw data (FASTQ files)
+2. Quality control reports (FastQC, MultiQC)
+3. Basic alignment files (if applicable)
+
+**Additional Analysis Options**:
+1. **Differential Expression** (RNA-seq): DESeq2/edgeR analysis
+2. **Variant Calling** (DNA-seq): GATK best practices pipeline
+3. **Peak Calling** (ChIP/ATAC-seq): MACS2 analysis
+4. **Custom Pipelines**: Tailored to your specific needs
+
+**Bioinformatics Support**:
+- Initial consultation included
+- Training workshops available
+- Collaboration with our bioinformatics team
+- Help with result interpretation
+
+Would you need assistance with specific analyses for your ${consultationData.projectTitle} project?`
+    }
+    
+    // Generic response for other questions
+    return `Thank you for your question about "${question}". Based on your project involving ${consultationData.organism || 'your organism'} and ${consultationData.sampleType || 'your samples'}:
+
+This is an excellent question that requires consideration of your specific experimental goals. Key factors include:
+
+1. Your research objectives and hypotheses
+2. Sample characteristics and quality
+3. Budget and timeline constraints
+4. Downstream analysis requirements
+
+I recommend we discuss your specific needs in detail. Our sequencing facility experts can provide personalized guidance to ensure your project's success.
+
+For immediate assistance, you can also:
+- Review our service catalog for detailed specifications
+- Contact our technical support team
+- Schedule a consultation with our genomics specialists
+
+Is there a specific aspect of ${question} you'd like me to elaborate on?`
   }
 
   // Utility method to check if AI is available
