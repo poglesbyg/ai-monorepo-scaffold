@@ -58,7 +58,11 @@ class OllamaService {
           'llama3.1',
           'llama3:latest',
           'llama3:8b',
-          'llama3'
+          'llama3',
+          'llama3.2:3b',
+          'llama3.2:1b',
+          'tinyllama:latest',
+          'tinyllama'
         ]
         
         console.log('🔍 Testing model variants...')
