@@ -27,6 +27,10 @@ COPY apps/web ./apps/web
 WORKDIR /app/apps/web
 RUN pnpm build
 
+# Create production deployment
+WORKDIR /app
+RUN pnpm --filter @seqconsult/web deploy /prod/web
+
 # Production stage
 FROM node:20-alpine AS runner
 
@@ -39,18 +43,8 @@ RUN addgroup -g 1001 -S nodejs && \
 
 WORKDIR /app
 
-# Copy built application
-COPY --from=builder --chown=nodejs:nodejs /app/apps/web/dist ./dist
-
-# Copy package.json and node_modules for the web app
-COPY --from=builder --chown=nodejs:nodejs /app/apps/web/package.json ./
-COPY --from=builder --chown=nodejs:nodejs /app/apps/web/node_modules ./node_modules
-
-# Also copy workspace node_modules that may be needed
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./workspace-node_modules
-
-# Copy packages directory (for workspace dependencies)
-COPY --from=builder --chown=nodejs:nodejs /app/packages ./packages
+# Copy the production deployment
+COPY --from=builder --chown=nodejs:nodejs /prod/web ./
 
 # Set proper permissions for OpenShift
 RUN chown -R nodejs:nodejs /app && \

@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: web
-        image: IMAGE_PLACEHOLDER
+        image: image-registry.openshift-image-registry.svc:5000/dept-barc/sequencing-consultant-web:latest
         ports:
         - containerPort: 3001
           protocol: TCP

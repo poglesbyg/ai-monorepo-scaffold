@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  labels:
+    app: sequencing-consultant
+    component: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sequencing-consultant
+      component: database
+  template:
+    metadata:
+      labels:
+        app: sequencing-consultant
+        component: database
+    spec:
+      containers:
+      - name: postgresql
+        image: bitnami/postgresql:15
+        ports:
+        - containerPort: 5432
+          protocol: TCP
+        env:
+        - name: POSTGRESQL_DATABASE
+          value: "crispr_db"
+        - name: POSTGRESQL_USERNAME
+          value: "crispr_user"
+        - name: POSTGRESQL_PASSWORD
+          value: "crispr_password"
+        - name: POSTGRESQL_POSTGRES_PASSWORD
+          value: "postgres_root_password"
+        - name: BITNAMI_DEBUG
+          value: "true"
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /bitnami/postgresql
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        readinessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - pg_isready -U crispr_user -d crispr_db
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - pg_isready -U crispr_user -d crispr_db
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgresql-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  labels:
+    app: sequencing-consultant
+    component: database
+spec:
+  ports:
+  - name: postgresql
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    app: sequencing-consultant
+    component: database
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgresql-pvc
+  labels:
+    app: sequencing-consultant
+    component: database
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi 
